@@ -156,23 +156,23 @@ public class GatewayUtil {
 	  
     	try {
 		    if ( isConnected() ) {
-
-	
-		    	File fp = new File(offlineFile);
-		    	fp.createNewFile();
-		    	PrintWriter ps = new PrintWriter(fp);
-		    	Format dtFmt = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,dtFmt.format(new Date()));
+		    	
+		    	/*
+		    	// test mode - test mode 
+		    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
+		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
 		    	ps.close();
-		    	
+		    	Log.v("clinch","Dumped to " + offlineFile);
+		    	*/
 		    	sendOfflineFile2(beaconID,offlineFile);
+		    	Log.v("clinch","SendFile=>" + this.responseMSG);
 		    	
-		    	//if ( !sendRequest(sURL)) 
-		    		//return false;
+		    	if ( !sendRequest(sURL)) 
+		    		return false;
+		    	
 		    } else {
-		    	PrintStream ps = new PrintStream(offlineFile);
-		    	Format dtFmt = new SimpleDateFormat("dd-MM-YYYY HH:mm:ss");
-		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,dtFmt.format(new Date()));
+		    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
+		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
 		    	ps.close();
 		    	Log.v("clinch","Dumped to " + offlineFile);
 		    }  // not connected
@@ -197,7 +197,11 @@ public class GatewayUtil {
 	     boolean sendSuccess = true ;
 
 	     try {
-	       FileInputStream fileInputStream = new FileInputStream ( new File (offlineFile )) ;
+	       File file = new File(offlineFile);
+	       if ( !file.exists() )
+	    	   return true;
+	    	 
+	       FileInputStream fileInputStream = new FileInputStream ( file ) ;
 
 	       String sURL = ("http://shluz.tygdenakarte.ru:60080/cgi-bin/LocationFromFile_02");
 
@@ -216,22 +220,20 @@ public class GatewayUtil {
 	       connection.setRequestProperty ( "Content-Type" , "multipart/form-data;boundary=" + boundary );
 	       
 	       outputStream = new DataOutputStream ( connection.getOutputStream ()) ;
-	       outputStream.writeBytes ( twoHyphens + boundary + lineEnd ) ;
-	       outputStream.flush () ;
+	       outputStream.writeBytes ( lineEnd+lineEnd+twoHyphens + boundary + lineEnd ) ;
+	    
 	       
 	       //---------------
 	       outputStream.writeBytes ( "Content-Disposition: form-data; name=\"" + "device" + "\";" + lineEnd + lineEnd) ;
-	       outputStream.flush () ;
 	       outputStream.writeBytes ( beaconID ) ;
-	       outputStream.flush () ;
 	       outputStream.writeBytes ( twoHyphens + boundary + lineEnd ) ;
 	       outputStream.flush () ;
 
 	       //---------------		       
-
-	       outputStream.writeBytes ( "Content-Disposition: form-data; name=\"" + "FormName" + "\";filename=\"" + offlineFile + "\"" + lineEnd ) ;
-	       outputStream.flush () ;
+	       outputStream.writeBytes ( "Content-Disposition: form-data; name=\"inputfile\";filename=\"" + offlineFile + "\"" + lineEnd ) ;
+	       outputStream.writeBytes ( "Content-Type: application/octet-stream\r\n\r\n") ;
 	       outputStream.writeBytes ( lineEnd ) ;
+	       
 	       outputStream.flush () ;
 	       
 	       bytesAvailable = fileInputStream.available () ;
@@ -244,14 +246,13 @@ public class GatewayUtil {
 	       while ( bytesRead > 0 ) 
 	       {
 	         outputStream.write ( buffer, 0 , bufferSize ) ;
-	         outputStream.flush () ;
+	         //outputStream.flush () ;
 	         bytesAvailable = fileInputStream.available () ;
 	         bufferSize = Math.min ( bytesAvailable, maxBufferSize ) ;
 	         bytesRead = fileInputStream.read ( buffer, 0 , bufferSize ) ;
 	       }
 
 	       outputStream.writeBytes ( lineEnd ) ;
-	       outputStream.flush () ;
 	       outputStream.writeBytes ( twoHyphens + boundary + twoHyphens + lineEnd ) ;
 	       outputStream.flush () ;
 	       fileInputStream.close () ;
@@ -260,13 +261,28 @@ public class GatewayUtil {
 
 	       connection.getResponseCode () ;
 	       String msg = connection.getResponseMessage();
-	       Log.v("clinch","response = " + msg);
-
+	       
+	       BufferedReader br = new BufferedReader( new InputStreamReader(connection.getInputStream()));
+	       String line = null;
+	       StringBuilder xml = new StringBuilder();
+	       while ( (line = br.readLine()) != null ) {
+	    	   xml.append(line);
+	       }
+	       br.close();
+	       
+	       parseResponse(xml.toString());
+	       
+	       if ( !file.delete() ) {
+	    	   Log.v("clinch","Cannot delete file");
+	    	   sendSuccess = false;
+	       }
+	       
 	     } catch ( Exception e ) {
 	    	 Log.v("clinch","Sending Request Error:" + e.toString());
 	    	 sendSuccess = false ;
 	     } finally {
-	       connection.disconnect () ;
+	    	 if ( connection != null )
+	    		 connection.disconnect () ;
 	     }
 	     return sendSuccess;
 	}
