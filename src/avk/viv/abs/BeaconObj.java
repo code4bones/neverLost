@@ -7,6 +7,8 @@ import android.util.Log;
 
 public class BeaconObj extends Object {
 	
+	public String login;
+	public String password;
 	public String name;
 	public String uid;
 	public String date;
@@ -15,10 +17,11 @@ public class BeaconObj extends Object {
 	public String status;
 	public Double accuracy;
 	public int	  interval;
+	public int	  selectedBeaconIndex;
 	
 	@Override
 	public String toString() {
-		String str = String.format("Name: %s,beaconID: %s,LAT:%f,LNG:%f,ACC:%f,DATE:%s,STATUS:%s", name,uid,latitude,longitude,accuracy,date,status);
+		String str = String.format("Login: %s, Password: %s, Name: %s, Interval: %d,beaconID: %s,LAT:%f,LNG:%f,ACC:%f,DATE:%s,STATUS:%s", login,password,interval,name,uid,latitude,longitude,accuracy,date,status);
 		return str;
 	}
 	

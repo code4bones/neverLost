@@ -1,16 +1,22 @@
 package avk.viv.abs;
+import android.app.Application;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
 
-public class TrackerService extends Service {
+public class TrackerService extends Service implements Runnable {
 
+	public static BeaconObj beaconObj = null;
+	
 	public class TrackerBinder extends Binder {
 		TrackerService getService() {
+			NetLog.v("Service: TrackerBinder.getService()");
 			return TrackerService.this;
 		}
 	}
@@ -21,15 +27,22 @@ public class TrackerService extends Service {
 	public void onCreate() 
 	{
 	  super.onCreate();
-	  
-	  
-      Log.v("clinch","Service Started");
+      NetLog.v("Service: I'm Created...");
 	}	
 
 	@Override
 	public int onStartCommand(Intent intent,int flags, int startId)
 	{
-		super.onStart(intent, startId);
+		super.onStartCommand(intent,flags, startId);
+		NetLog.v("Service: onStartCommand");
+		
+		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+		NetLog.v("Service: login = %s,password = %s,beaconID = %s,beaconName = %s interval = %d",
+				prefs.getString("login", ""),
+				prefs.getString("password", ""),
+				prefs.getString("beaconID","0"),
+				prefs.getString("beaconName", ""),
+				prefs.getInt("interval", 10));
 		
 		return START_STICKY;
 	}
@@ -39,17 +52,19 @@ public class TrackerService extends Service {
 	{
 		// TODO Auto-generated method stub
 	      //Toast.makeText(this, "Service run.", Toast.LENGTH_LONG).show();		
+		Log.v("clinch","Service run()");
 	}
 	
 	
 	@Override
 	public void onDestroy() 
 	{
+		Log.v("clinch","Service OnDestroy");
 	}
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
+		Log.v("clinch","onBind");
 		return trackerBinder;
 	}
 

@@ -1,12 +1,19 @@
 package avk.viv.abs;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
@@ -28,7 +35,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class NeverLostActivity extends Activity {
     /** Called when the activity is first created. */
-    public StateListener stateListener = null;
+    //public StateListener stateListener = null;
 	public static GatewayUtil gatewayUtil = null;
     
 	// GUI
@@ -41,17 +48,21 @@ public class NeverLostActivity extends Activity {
 	public ToggleButton tgActive;
 	static public BeaconObj currentBeacon;
     
-	private TrackerService trackerService;
-	private ServiceConnection serviceConnection;
-	boolean isServiceBound;
+	static TrackerService trackerService = null;
+	public ServiceConnection serviceConnection;
+	public boolean isServiceBound;
+	public boolean isRestoreState;
+	public boolean isActive;
 	
-	
+	public static final PrintStream log = NetLog.Init("clinch","neverLost.log",true);
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        NetLog.v("ACTIVITY STARTED\n");
+ 		
         isServiceBound = false;
         
         // GUI Initialization
@@ -67,13 +78,35 @@ public class NeverLostActivity extends Activity {
         this.tgActive.setEnabled(false);
         this.spBeacons.setEnabled(false);
         this.lbInterval.setTextColor(Color.DKGRAY);
+
+        currentBeacon = new BeaconObj();
+        isActive = false;
         
-        // delete
-        this.txtLogin.setText("bada");
-        this.txtPassword.setText("bada");
-		currentBeacon = new BeaconObj();
+		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+		// Поднимаем старые настройки
+		if ( prefs.getString("login", null) != null )
+		{
+			isRestoreState = true;
+			NetLog.v("GUI: Saved settings are available...\n");
+			currentBeacon.login    = prefs.getString("login", "");
+			currentBeacon.password = prefs.getString("password", "");
+			currentBeacon.uid      = prefs.getString("beaconID", "");
+			currentBeacon.name     = prefs.getString("beaconName", "");
+			currentBeacon.interval = prefs.getInt("interval", 10);
+			currentBeacon.selectedBeaconIndex = prefs.getInt("selectedBeaconIndex", 0);
+			NetLog.v("GUI: login = %s,password = %s,beaconID = %s,beaconName = %s interval = %d,idx = %d",
+					currentBeacon.login,
+					currentBeacon.password,
+					currentBeacon.uid,
+					currentBeacon.name,
+					currentBeacon.interval,
+					currentBeacon.selectedBeaconIndex);
+		}
+		
+		this.txtLogin.setText(currentBeacon.login);
+		this.txtPassword.setText(currentBeacon.password);
         
-        // HTTP Gateway Utility Object
+		// HTTP Gateway Utility Object
         gatewayUtil = new GatewayUtil(this,"mydevice");
         
         // Setup Version information label
@@ -112,7 +145,10 @@ public class NeverLostActivity extends Activity {
 						spBeacons.setAdapter(ad);	
 						spBeacons.setPrompt("Выберете...");
 						tgActive.setEnabled(true);
-				        spBeacons.setEnabled(true);
+				        spBeacons.setEnabled(!isActive);
+						// Если востанавлеваем значения из sharedprefs...
+						if ( isRestoreState )
+							spBeacons.setSelection(currentBeacon.selectedBeaconIndex);
 					}
 				};
 				task.execute((Void[])null);
@@ -124,14 +160,29 @@ public class NeverLostActivity extends Activity {
 			public void onItemSelected(AdapterView<?> item,View view,int position,long id) {
 				BeaconObj obj = (BeaconObj)item.getAdapter().getItem(position);
 				currentBeacon = obj;
-				
+				currentBeacon.login = txtLogin.getText().toString();
+				currentBeacon.password = txtPassword.getText().toString();
 				currentBeacon.interval = NeverLostActivity.gatewayUtil.getFrequency(obj.uid);
+				currentBeacon.selectedBeaconIndex = position;
 				if ( currentBeacon.interval <= 0 ) {
 					Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG,Toast.LENGTH_SHORT).show();
 					currentBeacon.interval = 10;
 				}
+				
 				lbInterval.setText(String.format("Период обновления: %d мин.",currentBeacon.interval));
 		        lbInterval.setTextColor(Color.WHITE);
+		        
+		        // Сохранимся....
+				SharedPreferences prefs = NeverLostActivity.this.getSharedPreferences("prefs",1);
+				SharedPreferences.Editor edit = prefs.edit();
+				edit.putString("beaconID",currentBeacon.uid);
+				edit.putString("beaconName",currentBeacon.name);
+				edit.putString("login", currentBeacon.login);
+				edit.putString("password", currentBeacon.password);
+				edit.putInt("interval",currentBeacon.interval);
+				edit.putInt("selectedBeaconIndex", currentBeacon.selectedBeaconIndex);
+				edit.commit();
+			
 			}
 			public void onNothingSelected(AdapterView<?> arg) {
 			}
@@ -166,7 +217,7 @@ public class NeverLostActivity extends Activity {
 		// Остановка/Запуск сервиса
 		CompoundButton.OnCheckedChangeListener onChangeActive = new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton arg0, boolean fActive) {
-				Log.v("clinch","Active ? " + fActive);
+				NetLog.v("clinch","Set service state to %d\n",fActive);
 				txtLogin.setEnabled(!fActive);
 				txtLogin.setClickable(!fActive);
 				txtPassword.setEnabled(!fActive);
@@ -177,57 +228,91 @@ public class NeverLostActivity extends Activity {
 			}
 		};
 		
-		// Запускаем сервис
+		// пока не надо, но пригадицца потом,для статистики....
+		serviceConnection = new ServiceConnection() {
+			public void onServiceConnected(ComponentName className, IBinder binder) {
+				 trackerService = ((TrackerService.TrackerBinder)binder).getService();
+				 NetLog.v("Service Connected\n");
+			}
+			public void onServiceDisconnected(ComponentName arg0) {
+				 trackerService = null;
+				 NetLog.v("Service Disconnected...\n");
+			}
+		};
 		
+
 		// Вешаем эвенты
 		this.tgActive.setOnCheckedChangeListener(onChangeActive);
 		this.bnFetchBeacons.setOnClickListener( onLoadBeacons );		
 		this.spBeacons.setOnItemSelectedListener( onSelectBeacon );
 		this.txtLogin.setOnKeyListener(onValidateInput);
 		this.txtPassword.setOnKeyListener(onValidateInput);
-	
-		serviceConnection = new ServiceConnection() {
-			public void onServiceConnected(ComponentName arg0, IBinder arg1) {
-				 trackerService = ((TrackerService.TrackerBinder)arg1).getService();
-				 Log.v("clinch","Service Connected");
-				
-			}
-			public void onServiceDisconnected(ComponentName arg0) {
-				 trackerService = null;
-			}
-		};
+
+		// Состояние контролсов
+		if ( (this.isActive = isServiceRunning()) == true ) {
+			NetLog.v("Service is already Running...");
+			tgActive.setChecked(true);
+			tgActive.setEnabled(true);
+		}
 		
-        // Monitors different states of device
-        stateListener = new StateListener(this) {
-        	@Override
-        	public void handleMessage(Message msg) {
-        		Log.v("clinch",(String)msg.obj);
-        	}
-        }; // StateListener
+		// если есть предыдущее состояние - восстанавливаем значение в спиннере
+		if ( isRestoreState ) 
+			bnFetchBeacons.performClick();
 	} // onCreate
 
+	boolean isServiceRunning() {
+		String srvName = TrackerService.class.getName();
+		ActivityManager mgr = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+		for ( RunningServiceInfo srv : mgr.getRunningServices(Integer.MAX_VALUE)) {
+			NetLog.v("Service: %s",srv.service.getClassName());
+			if ( srvName.equals(srv.service.getClassName()))
+				return true;
+		}
+		return false;
+	}
+	
 	void doBindService() {
-		bindService(new Intent(this,TrackerService.class),serviceConnection,Context.BIND_AUTO_CREATE);
-		isServiceBound = true;
+		if ( bindService(new Intent(this,TrackerService.class),serviceConnection,Context.BIND_AUTO_CREATE) ) {
+			NetLog.v("Service successfuly binded...\n");
+			isServiceBound = true;
+		} else {
+			NetLog.v("Failed to bind service\n");
+		}
 	}
 	
 	void doUnbindService() {
 		if ( isServiceBound ) {
+			NetLog.v("Unbinding service...\n");
 			unbindService(serviceConnection);
 			isServiceBound = false;
 		}
 	}
 	
 	boolean controlService(boolean fActive) {
+		SharedPreferences prefs = NeverLostActivity.this.getSharedPreferences("prefs",1);
+		SharedPreferences.Editor edit = prefs.edit();
+
+		AlarmManager service = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+	    Intent intent = new Intent(this,StartTrackerServiceReceiver.class);
+	    PendingIntent pending = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		
 		if ( fActive ) {
-			this.startService(new Intent(this,TrackerService.class));
-	      	Toast.makeText(NeverLostActivity.this, "Сервис стартовал !",Toast.LENGTH_SHORT).show();
+			doBindService();
+		    Calendar cal = Calendar.getInstance();
+		    cal.add(Calendar.SECOND, 10);
+		    
+		    service.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+						cal.getTimeInMillis(), OnBootReceiver.REPEAT_TIME, pending);
+	      	
+			Toast.makeText(NeverLostActivity.this, "Сервис стартовал !",Toast.LENGTH_SHORT).show();
+			edit.putBoolean("active",true);
 		} else {
-			this.stopService(new Intent(this,TrackerService.class));
+			doUnbindService();
+	      	service.cancel(pending);
 	      	Toast.makeText(NeverLostActivity.this, "Сервис остановлен...",Toast.LENGTH_SHORT).show();
+			edit.putBoolean("active",false);
 		}
-		
+		edit.commit();
 		return true;
 	}
 	

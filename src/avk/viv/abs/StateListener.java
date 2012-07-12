@@ -18,11 +18,11 @@ public class StateListener  extends Handler {
 	public LocationManager locManager;
 	public TelephonyManager phManager; 
 	
-	public ConnectListener conListener;
+	//public ConnectListener conListener;
 	public PhoneListener   phoneListener;
 	public GPSListener      gpsListener;
 	public static Handler		   stateHandler;
-	
+	/*
 	public static class ConnectListener extends BroadcastReceiver {
 
 		@Override
@@ -34,7 +34,7 @@ public class StateListener  extends Handler {
 		}
 	
 	}
-	
+	*/
 	private class PhoneListener extends PhoneStateListener {
 		
 		@Override
@@ -60,7 +60,7 @@ public class StateListener  extends Handler {
 
 			stateHandler = (Handler)this;
 			
-			conListener   = new ConnectListener();
+			//conListener   = new ConnectListener();
 			phoneListener = new PhoneListener();
 			gpsListener   = new GPSListener();
 			
