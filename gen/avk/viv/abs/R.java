@@ -14,14 +14,17 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int btnSelectBeacon=0x7f050009;
+        public static final int lbActive=0x7f05000b;
         public static final int lbBeacon=0x7f050007;
-        public static final int lbBeaconID=0x7f050008;
+        public static final int lbInterval=0x7f05000a;
         public static final int lbLink=0x7f050002;
         public static final int lbLogin=0x7f050003;
         public static final int lbPassword=0x7f050005;
         public static final int lbTitle=0x7f050001;
         public static final int lbVersion=0x7f050000;
+        public static final int sbFetchBeacons=0x7f050009;
+        public static final int spBeacons=0x7f050008;
+        public static final int tgActive=0x7f05000c;
         public static final int txtLogin=0x7f050004;
         public static final int txtPassword=0x7f050006;
     }

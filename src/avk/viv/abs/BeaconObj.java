@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 
 import android.util.Log;
 
-public class BeaconObj {
+public class BeaconObj extends Object {
 	
 	public String name;
 	public String uid;
@@ -14,6 +14,7 @@ public class BeaconObj {
 	public Double longitude;
 	public String status;
 	public Double accuracy;
+	public int	  interval;
 	
 	@Override
 	public String toString() {

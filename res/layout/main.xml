@@ -40,7 +40,7 @@
         android:id="@+id/txtLogin"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:ems="10" >
+        android:ems="10" android:lines="1" android:inputType="text">
 
         <requestFocus />
     </EditText>
@@ -58,37 +58,70 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPassword" />
-
+
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.81"
         android:gravity="right"
         android:orientation="horizontal" >
-
+
         <TextView
             android:id="@+id/lbBeacon"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:text="Телефон"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_vertical|center_horizontal"/>
-
-        <TextView
-            android:id="@+id/lbBeaconID"
-            android:layout_width="182dp"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.89"
             android:gravity="center_vertical|center_horizontal"
-            android:text="[не выбран]"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <Button
-            android:id="@+id/btnSelectBeacon"
-            style="?android:attr/buttonStyleSmall"
+            android:paddingRight="20px"
+            android:text="Телефон"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/spBeacons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.22"
+            android:paddingLeft="20px" />
+
+        <Button
+            android:id="@+id/sbFetchBeacons"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
             android:gravity="center_vertical"
-            android:text="Выбор" />
+            android:text="Получить" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/lbInterval"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Период обновления"
+        android:textAppearance="?android:attr/textAppearanceMedium" android:paddingTop="20px"/>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="15.16"
+        android:gravity="bottom|fill"
+        android:orientation="horizontal"
+        android:paddingTop="100px" >
+
+        <TextView
+            android:id="@+id/lbActive"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.94"
+            android:gravity="center_vertical"
+            android:text="Состояние"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <ToggleButton
+            android:id="@+id/tgActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right|center_vertical"
+            android:text="ToggleButton" />
     </LinearLayout>
 
 </LinearLayout>
