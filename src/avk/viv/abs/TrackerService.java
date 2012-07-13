@@ -20,8 +20,9 @@ import android.widget.Toast;
 public class TrackerService extends Service implements Runnable {
 
 	public static BeaconObj beaconObj = null;
-	public LocationManager locMgr;
-	public LocationTracker tracker;
+	public LocationManager locMgr = null;
+	public LocationTracker tracker = null;
+	UpdateLocation updateLocation = null;
 	
 	public class TrackerBinder extends Binder {
 		TrackerService getService() {
@@ -55,20 +56,20 @@ public class TrackerService extends Service implements Runnable {
 				prefs.getInt("interval", 10));
 		
 	    Context context = this.getApplicationContext();
-	    tracker = new LocationTracker(context,prefs);
-		tracker.Init();
-		tracker.run();
+		
+	    if ( updateLocation == null )
+	    	updateLocation = new UpdateLocation();
+	    
+		updateLocation.Start(context);
 		
 		return START_STICKY;
 	}
 	
-	
-	
 	@Override
 	public void onDestroy() 
 	{
-		tracker.Done();
-		tracker = null;
+		updateLocation.Stop(this.getApplicationContext());
+		updateLocation = null;
 		NetLog.v("Service: OnDestroy");
 	}
 	
@@ -77,10 +78,10 @@ public class TrackerService extends Service implements Runnable {
 		NetLog.v("Service: onBind");
 		return trackerBinder;
 	}
-
+	
+	// @Override
 	public void run() {
-		// TODO Auto-generated method stub
-		NetLog.v("SERVICE RUNNING\n");
+		
 	}
 
 	

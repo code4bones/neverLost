@@ -307,9 +307,10 @@ public class NeverLostActivity extends Activity {
 		    // Авторизация активного телефона
 		    if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) )
 				Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG ,Toast.LENGTH_SHORT).show();
-	      	else
+	      	else {
 	      		Toast.makeText(NeverLostActivity.this, "Сервис запущен...",Toast.LENGTH_SHORT).show();
-	      	
+	      		NetLog.v("Activation: %d",gatewayUtil.responseRC);
+	      	}
 			edit.putBoolean("active",true);
 		} else {
 			doUnbindService();

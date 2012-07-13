@@ -166,8 +166,7 @@ public class GatewayUtil {
 		    	
 		    	LocationObj locObj = (LocationObj)locationObj;
 		    	
-		    	//sendOfflineFile2(locObj.beaconID,offlineFile);
-		    	Log.v("clinch","SendFile=>" + this.responseMSG);
+		    	sendOfflineFile2(locObj.beaconID,offlineFile);
 		    	
 		    	if ( !sendRequest(locationObj.getURL())) 
 		    		return false;
@@ -273,6 +272,7 @@ public class GatewayUtil {
 	       br.close();
 	       
 	       parseResponse(xml.toString());
+	       Log.v("clinch","SendFile: " + this.responseMSG);
 	       
 	       if ( !file.delete() ) {
 	    	   Log.v("clinch","Cannot delete file");

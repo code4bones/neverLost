@@ -29,14 +29,11 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 	
 	class CommonListener implements LocationListener {
 		
-		public String sProvider;
-		
-		public CommonListener(String sProvider) {
-			this.sProvider = sProvider;
+		public CommonListener() {
 		}
 		
 		public void onLocationChanged(Location location) {
-			NetLog.v("%s: Changed: %s\n", sProvider,location.toString());
+			NetLog.v("%s: Changed: %s\n", location.getProvider(),location.toString());
 
 			String beaconID = prefs.getString("beaconID", "0");
 			
@@ -44,7 +41,10 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 			LocationObj locObj = new GPSOrNetworkLocationObj(beaconID,location,"no status");
 			
 			if ( gw.saveLocation(locObj) )
-				NetLog.v("%s: Failed to save location: %s",sProvider,gw.responseMSG);
+				NetLog.v("%s: Failed to save location: %s",location.getProvider(),gw.responseMSG);
+		
+			gpsManager.removeUpdates(gpsListener);
+			wifiManager.removeUpdates(wifiListener);
 		}
 
 		public void onProviderDisabled(String provider) {
@@ -52,7 +52,6 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 		}
 
 		public void onProviderEnabled(String provider) {
-			// TODO Auto-generated method stub
 			NetLog.v("%s: Enabled\n",provider);
 		}
 
@@ -68,14 +67,15 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 			String beaconID = prefs.getString("beaconID", "0");
 			NetLog.v("Want's to update GSM location for %s",beaconID);
 		    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,"no gsm status");
-		    if ( gatewayUtil.saveLocation(locObj) == false )
+		    if ( !gatewayUtil.saveLocation(locObj) )
 		    	NetLog.v("Failed to save GSM location: %s",gatewayUtil.responseMSG);
+		    else NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
 		}
 	};
 	
-	public LocationTracker(Context context,SharedPreferences prefs) {
+	public LocationTracker(Context context) {
 		this.context = context;
-		this.prefs   = prefs;
+		this.prefs   = context.getSharedPreferences("prefs", 1);
 	}
 
 	public void Init() {
@@ -87,8 +87,8 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 		gpsManager = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
 		wifiManager = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
 		
-		gpsListener = new CommonListener(LocationManager.GPS_PROVIDER);
-		wifiListener = new CommonListener(LocationManager.NETWORK_PROVIDER);
+		gpsListener = new CommonListener();
+		wifiListener = new CommonListener();
 		// Request out updates...
 	}
 
@@ -96,16 +96,20 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 		NetLog.v("LocationTracker released");
 		gpsManager = null;
 		wifiManager = null;
-		gsmTimer.cancel();
-		gsmTimer = null;
 	}
 
-	public void run() {
+	public void requestUpdate() {
 		NetLog.v("LocationTacker Run\n");
+		// запрашиваем апдейты по сети и спутнику
 		gpsManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsListener);
 		wifiManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, wifiListener);
-		gsmTimer = new Timer();
-		UpdateGSM updateGSM = new UpdateGSM();
-		gsmTimer.schedule(updateGSM, 0, 5000);
+		String beaconID = prefs.getString("beaconID", "0");
+		
+		// Сразу хватаем данные с вышек
+		NetLog.v("Want's to update GSM location for %s",beaconID);
+	    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,"no gsm status");
+	    if ( !gatewayUtil.saveLocation(locObj) )
+	    	NetLog.v("Failed to save GSM location: %s",gatewayUtil.responseMSG);
+	    else NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
 	}
 }
