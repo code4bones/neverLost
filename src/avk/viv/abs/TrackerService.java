@@ -1,10 +1,17 @@
 package avk.viv.abs;
+import java.util.Timer;
+
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.GpsStatus;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +20,8 @@ import android.widget.Toast;
 public class TrackerService extends Service implements Runnable {
 
 	public static BeaconObj beaconObj = null;
+	public LocationManager locMgr;
+	public LocationTracker tracker;
 	
 	public class TrackerBinder extends Binder {
 		TrackerService getService() {
@@ -28,13 +37,14 @@ public class TrackerService extends Service implements Runnable {
 	{
 	  super.onCreate();
       NetLog.v("Service: I'm Created...");
-	}	
+	} // onCreate
 
 	@Override
 	public int onStartCommand(Intent intent,int flags, int startId)
 	{
 		super.onStartCommand(intent,flags, startId);
 		NetLog.v("Service: onStartCommand");
+
 		
 		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
 		NetLog.v("Service: login = %s,password = %s,beaconID = %s,beaconName = %s interval = %d",
@@ -44,28 +54,33 @@ public class TrackerService extends Service implements Runnable {
 				prefs.getString("beaconName", ""),
 				prefs.getInt("interval", 10));
 		
+	    Context context = this.getApplicationContext();
+	    tracker = new LocationTracker(context,prefs);
+		tracker.Init();
+		tracker.run();
+		
 		return START_STICKY;
 	}
 	
-	//@Override
-	public void run() 
-	{
-		// TODO Auto-generated method stub
-	      //Toast.makeText(this, "Service run.", Toast.LENGTH_LONG).show();		
-		Log.v("clinch","Service run()");
-	}
 	
 	
 	@Override
 	public void onDestroy() 
 	{
-		Log.v("clinch","Service OnDestroy");
+		tracker.Done();
+		tracker = null;
+		NetLog.v("Service: OnDestroy");
 	}
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		Log.v("clinch","onBind");
+		NetLog.v("Service: onBind");
 		return trackerBinder;
+	}
+
+	public void run() {
+		// TODO Auto-generated method stub
+		NetLog.v("SERVICE RUNNING\n");
 	}
 
 	

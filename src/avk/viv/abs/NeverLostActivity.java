@@ -107,7 +107,7 @@ public class NeverLostActivity extends Activity {
 		this.txtPassword.setText(currentBeacon.password);
         
 		// HTTP Gateway Utility Object
-        gatewayUtil = new GatewayUtil(this,"mydevice");
+        gatewayUtil = new GatewayUtil(this);
         
         // Setup Version information label
         PackageInfo pinfo;
@@ -299,16 +299,22 @@ public class NeverLostActivity extends Activity {
 		if ( fActive ) {
 			doBindService();
 		    Calendar cal = Calendar.getInstance();
-		    cal.add(Calendar.SECOND, 10);
+		    cal.add(Calendar.SECOND, 1);
 		    
 		    service.setInexactRepeating(AlarmManager.RTC_WAKEUP,
 						cal.getTimeInMillis(), OnBootReceiver.REPEAT_TIME, pending);
 	      	
-			Toast.makeText(NeverLostActivity.this, "Сервис стартовал !",Toast.LENGTH_SHORT).show();
+		    // Авторизация активного телефона
+		    if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) )
+				Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG ,Toast.LENGTH_SHORT).show();
+	      	else
+	      		Toast.makeText(NeverLostActivity.this, "Сервис запущен...",Toast.LENGTH_SHORT).show();
+	      	
 			edit.putBoolean("active",true);
 		} else {
 			doUnbindService();
 	      	service.cancel(pending);
+	      	this.stopService(new Intent(this,TrackerService.class));
 	      	Toast.makeText(NeverLostActivity.this, "Сервис остановлен...",Toast.LENGTH_SHORT).show();
 			edit.putBoolean("active",false);
 		}

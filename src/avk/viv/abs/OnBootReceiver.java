@@ -12,7 +12,7 @@ import android.content.SharedPreferences;
 
 public class OnBootReceiver extends BroadcastReceiver {
 
-	public static final long REPEAT_TIME = 1000 * 30;
+	public static final long REPEAT_TIME = 1000 * 600;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {

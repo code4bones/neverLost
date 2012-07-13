@@ -70,7 +70,7 @@ public class StateListener  extends Handler {
 			
 			
 			locManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
-			locManager.addGpsStatusListener(gpsListener);
+			//locManager.addGpsStatusListener(gpsListener);
 			
 			Log.v("clinch","Listeners created");
 	}

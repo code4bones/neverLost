@@ -18,6 +18,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,21 +49,27 @@ import org.w3c.dom.Document;
 
 import android.content.Context;
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 public class GatewayUtil {
 	
+	
 	// UID телефона
-	public String deviceID;
+	public static String deviceID;
 	public Integer responseRC;
 	public String  responseMSG;
 	public Context context;
 	
-	public GatewayUtil(Context context_,String deviceID_) {
+	public GatewayUtil(Context context_) {
 		context = context_;
-		deviceID = deviceID_;
+		TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		GatewayUtil.deviceID = tm.getDeviceId();
 		Log.v("clinch","Gateway Initialized: UID = " + deviceID);
 	}
 
@@ -75,7 +84,7 @@ public class GatewayUtil {
 	   }
 	    else {
 	        sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.phone_authorization</name><index></index><param>%s^%s^%s^-%s</param></function></request>";
-	        sURL = String.format(sRequest,login,pass,beaconID,this.deviceID);
+	        sURL = String.format(sRequest,login,pass,beaconID,GatewayUtil.deviceID);
 	    }
 		
 		if ( sendRequest(sURL) == false )
@@ -147,32 +156,25 @@ public class GatewayUtil {
 		 
 		return responseRC;
 	}
-	
-	public boolean saveLocation(String beaconID, Double lng,Double lat,Double acc,String status) {
+
+	public boolean saveLocation(LocationObj locationObj) {
 		
-	    String sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.saveLocation_Phone_IPhnone</name><index>1</index><param>%s^%f^%f^%f^-%s^%s</param></function></request>";
-	    String sURL = String.format(sRequest, beaconID,lng,lat,acc,this.deviceID,status);
     	String offlineFile = Environment.getExternalStorageDirectory() + "/LocationHistory.log";
 	  
     	try {
 		    if ( isConnected() ) {
 		    	
-		    	/*
-		    	// test mode - test mode 
-		    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
-		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
-		    	ps.close();
-		    	Log.v("clinch","Dumped to " + offlineFile);
-		    	*/
-		    	sendOfflineFile2(beaconID,offlineFile);
+		    	LocationObj locObj = (LocationObj)locationObj;
+		    	
+		    	//sendOfflineFile2(locObj.beaconID,offlineFile);
 		    	Log.v("clinch","SendFile=>" + this.responseMSG);
 		    	
-		    	if ( !sendRequest(sURL)) 
+		    	if ( !sendRequest(locationObj.getURL())) 
 		    		return false;
 		    	
 		    } else {
 		    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
-		    	ps.printf("-1^%s^%f^%f^%f^-%s^%s^%s\n",beaconID,lng,lat,acc,this.deviceID,status,new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
+		    	ps.printf("%s", locationObj.getFile());
 		    	ps.close();
 		    	Log.v("clinch","Dumped to " + offlineFile);
 		    }  // not connected
@@ -260,7 +262,7 @@ public class GatewayUtil {
 	       outputStream.close () ;
 
 	       connection.getResponseCode () ;
-	       String msg = connection.getResponseMessage();
+	       //String msg = connection.getResponseMessage();
 	       
 	       BufferedReader br = new BufferedReader( new InputStreamReader(connection.getInputStream()));
 	       String line = null;
@@ -289,7 +291,7 @@ public class GatewayUtil {
 	
 	public boolean sendOfflineFile(String offlineFile) {
 		try {
-			String b = "0xdeadfood";
+			//String b = "0xdeadfood";
 			Log.v("clinch","Sending: " + offlineFile);
 			String sURL = ("http://shluz.tygdenakarte.ru:60080/cgi-bin/LocationFromFile_02");
 			File file = new File(offlineFile);
@@ -370,4 +372,26 @@ public class GatewayUtil {
  			return true;
  			return false;
 	} 
+
+	static public String md5(String in) 
+	{
+		MessageDigest digest;
+		try {
+			  digest = MessageDigest.getInstance("MD5");
+			  digest.reset();
+			  digest.update(in.getBytes());
+			  byte[] a = digest.digest();
+			  int len = a.length;
+			  StringBuilder sb = new StringBuilder(len << 1);
+			  for (int i = 0; i < len; i++) 
+			  {
+			    sb.append(Character.forDigit((a[i] & 0xf0) >> 4, 16));
+			    sb.append(Character.forDigit(a[i] & 0x0f, 16));
+		      }
+			  return sb.toString();
+		    } catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
+	    return in;
+	}
+
 }
+
