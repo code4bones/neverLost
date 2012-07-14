@@ -24,6 +24,9 @@ import android.os.Message;
 import android.telephony.*;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnKeyListener;
@@ -228,7 +231,6 @@ public class NeverLostActivity extends Activity {
 			}
 		};
 		
-		// пока не надо, но пригадицца потом,для статистики....
 		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder binder) {
 				 trackerService = ((TrackerService.TrackerBinder)binder).getService();
@@ -342,6 +344,35 @@ public class NeverLostActivity extends Activity {
 		doUnbindService();
 	}
 	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main_menu, menu);
+	    return true;
+	}	
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	        case R.id.miStart:
+	        	Intent myIntent = new Intent(this, NeverLostActivity.class);
+                startActivityForResult(myIntent, 0);
+	            return true;
+	        case R.id.miStatus:
+	        	Intent myIntent2 = new Intent(this, StatusActivity.class);
+                startActivityForResult(myIntent2, 0);
+	            return true;
+	      /*
+	        case R.id.miSeatMate:
+	        	//Intent myIntent3 = new Intent(this, StatusActivity.class);
+                //startActivityForResult(myIntent3, 0);
+	            return true;
+	            */
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}	
 } // NeverLostActivity Class
 
 

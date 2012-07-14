@@ -23,6 +23,7 @@ public class TrackerService extends Service implements Runnable {
 	public LocationManager locMgr = null;
 	public LocationTracker tracker = null;
 	UpdateLocation updateLocation = null;
+	LocationObj lastLocation = null;
 	
 	public class TrackerBinder extends Binder {
 		TrackerService getService() {
@@ -60,9 +61,22 @@ public class TrackerService extends Service implements Runnable {
 	    if ( updateLocation == null )
 	    	updateLocation = new UpdateLocation();
 	    
-		updateLocation.Start(context);
+		updateLocation.Start(context,this);
 		
 		return START_STICKY;
+	}
+	
+	public synchronized void  setLastLocation(LocationObj locationObj) {
+		NetLog.v("Tracker Service - setLastLocation...");
+		lastLocation = locationObj;
+	}
+	
+	public synchronized LocationObj getLocation() {
+		if ( lastLocation == null )
+			return null;
+		
+		NetLog.v("Status - returning location %s\n", lastLocation.toString());
+		return lastLocation;
 	}
 	
 	@Override

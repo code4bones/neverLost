@@ -2,6 +2,7 @@
 <resources>
 
     <string name="hello">Hello World,TEST !</string>
-    <string name="app_name">NeverLost</string>
+    <string name="app_name">Ты где на карте ?</string>
+    <string name="status_name">Статус</string>
 
 </resources>

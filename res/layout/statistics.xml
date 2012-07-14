@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:text="Статус"
+        android:textAppearance="?android:attr/textAppearanceLarge" android:paddingTop="20px"/>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20px"
+        android:text="Подпись на карте"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/txtStatus"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:lines="1" >
+
+        <requestFocus />
+    </EditText>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.06" >
+
+        <TextView
+            android:id="@+id/lbLatitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:paddingTop="10px"
+            android:text="Широта"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:paddingRight="20px" android:width="250px"/>
+
+        <TextView
+            android:id="@+id/lbLatitudeValue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbLatitude"
+            android:layout_alignBottom="@+id/lbLatitude"
+            android:layout_toRightOf="@+id/lbLatitude"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/lbLongitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lbLatitude"
+            android:layout_marginTop="15dp"
+            android:text="Долгота"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+
+        <TextView
+            android:id="@+id/lbLongitudeValue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbLongitude"
+            android:layout_alignBottom="@+id/lbLongitude"
+            android:layout_alignLeft="@+id/lbLatitudeValue"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/lbAccuracy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lbLongitude"
+            android:layout_marginTop="17dp"
+            android:text="Точность"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+
+        <TextView
+            android:id="@+id/lbAccuracyValue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbAccuracy"
+            android:layout_alignBottom="@+id/lbAccuracy"
+            android:layout_toRightOf="@+id/lbAccuracy"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/lbTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lbAccuracy"
+            android:layout_marginTop="18dp"
+            android:text="Время"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+
+        <TextView
+            android:id="@+id/lbTimeValue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbTime"
+            android:layout_alignBottom="@+id/lbTime"
+            android:layout_alignLeft="@+id/lbAccuracyValue"
+            android:gravity="center_horizontal"
+            android:text="01/01/12 00:00:00"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/lbUpdates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lbTime"
+            android:layout_marginTop="16dp"
+            android:text="Обновления"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+
+        <TextView
+            android:id="@+id/lbUpdatesValue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbUpdates"
+            android:layout_alignBottom="@+id/lbUpdates"
+            android:layout_alignLeft="@+id/lbTimeValue"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+
+    </RelativeLayout>
+
+</LinearLayout>
