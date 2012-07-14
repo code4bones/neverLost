@@ -7,10 +7,12 @@ import java.util.Calendar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -51,6 +53,7 @@ public class NeverLostActivity extends Activity {
 	public ToggleButton tgActive;
 	static public BeaconObj currentBeacon;
     
+	public Intent statusIntent = null;
 	static TrackerService trackerService = null;
 	public ServiceConnection serviceConnection;
 	public boolean isServiceBound;
@@ -65,7 +68,8 @@ public class NeverLostActivity extends Activity {
         setContentView(R.layout.main);
         
         NetLog.v("ACTIVITY STARTED\n");
- 		
+        
+        
         isServiceBound = false;
         
         // GUI Initialization
@@ -136,6 +140,7 @@ public class NeverLostActivity extends Activity {
 					@Override
 					public void OnComplete(ArrayList<BeaconObj> beaconList) {
 						if ( beaconList == null ) {
+							NetLog.MsgBox(NeverLostActivity.this,"Ошибка","Ошибка получения списка:%s",gatewayUtil.responseMSG);
 							Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG,Toast.LENGTH_SHORT).show();
 					        tgActive.setEnabled(false);
 					        spBeacons.setEnabled(false);
@@ -260,6 +265,9 @@ public class NeverLostActivity extends Activity {
 		// если есть предыдущее состояние - восстанавливаем значение в спиннере
 		if ( isRestoreState ) 
 			bnFetchBeacons.performClick();
+		
+		// наш статус
+		statusIntent = new Intent(this, StatusActivity.class);
 	} // onCreate
 
 	boolean isServiceRunning() {
@@ -355,15 +363,12 @@ public class NeverLostActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	        case R.id.miStart:
-	        	Intent myIntent = new Intent(this, NeverLostActivity.class);
-                startActivityForResult(myIntent, 0);
-	            return true;
 	        case R.id.miStatus:
-	        	Intent myIntent2 = new Intent(this, StatusActivity.class);
-                startActivityForResult(myIntent2, 0);
+	        	//Intent myIntent2 = new Intent(this, StatusActivity.class);
+                //startActivityForResult(statusIntent, 0);
+                this.startActivityFromChild(this, statusIntent, 0);
 	            return true;
-	      /*
+	      /* Пока не ясно как прикрутить карту, какой-то гугуль-код нужен....
 	        case R.id.miSeatMate:
 	        	//Intent myIntent3 = new Intent(this, StatusActivity.class);
                 //startActivityForResult(myIntent3, 0);
@@ -372,7 +377,9 @@ public class NeverLostActivity extends Activity {
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
-	}	
+	}
+	
+	
 } // NeverLostActivity Class
 
 

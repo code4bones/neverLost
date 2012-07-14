@@ -44,8 +44,9 @@ public class XMLParser {
 	/**
 	 * Getting XML from URL making HTTP request
 	 * @param url string
+	 * @throws Exception 
 	 * */
-	public String getXmlFromUrl(String url) {
+	public String getXmlFromUrl(String url) throws Exception {
 		String xml = null;
 		try {
 	  	    HttpGet request = new HttpGet(url);
@@ -53,12 +54,8 @@ public class XMLParser {
 		    HttpResponse response = httpClient.execute(request); 
 		    HttpEntity entity = response.getEntity();
 		    xml = EntityUtils.toString(entity);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch ( Exception e ) {
+			throw e;
 		}
 		// return XML
 		return xml;

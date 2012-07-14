@@ -9,6 +9,9 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Environment;
 import android.util.Log;
 
@@ -43,6 +46,7 @@ public class NetLog {
 		Log.v(TAG,s);
 	}
 	
+	
 	public static void Dump() {
 		File file = new File(sLogFile);
 		try {
@@ -55,4 +59,18 @@ public class NetLog {
 			Log.v(TAG,"NetLog.Dump()=>"+e.toString());
 		}
 	}
+	
+	public static void MsgBox(Context ctx,String sTitle,String fmt,Object ... args) {
+		String msg = String.format(fmt, args);
+		AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(ctx);                      
+	    dlgAlert.setTitle(sTitle); 
+	    dlgAlert.setMessage(msg); 
+	    dlgAlert.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int whichButton) {
+	        }
+	   });
+	    dlgAlert.setCancelable(true);
+	    dlgAlert.create().show();
+	}
+	
 };

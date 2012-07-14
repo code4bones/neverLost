@@ -49,16 +49,16 @@ import org.w3c.dom.Document;
 
 import android.content.Context;
 
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
-import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 public class GatewayUtil {
 	
+	public static int kGSM = 1;
+	public static int kGPS = 2;
+	public static int kWiFi = 3;
 	
 	// UID телефона
 	public static String deviceID;
@@ -350,17 +350,25 @@ public class GatewayUtil {
 		try {
 			URI sURI = new URI("http",sURL,null);
 			sURL = sURI.toString();
-			Log.v("clinch","Sending:" + sURL);
+			NetLog.v("Sending: %s",sURL);
 			
 			XMLParser xmlParser = new XMLParser();
 			String xmlStr = xmlParser.getXmlFromUrl(sURL);
+			if ( xmlStr == null ) {
+				responseRC = -1;
+				responseMSG = "Ошибка получения ответа от сервера...";
+				return false;
+				
+			}
 			parseResponse(xmlStr);
 			
-			Log.v("clinch","RC = " + responseRC);
-			Log.v("clinch","MSG = " + responseMSG);
+			NetLog.v("RC = %d",responseRC);
+			NetLog.v("MSG = %s",responseMSG);
 			
 		} catch ( Exception e ) {
-			Log.v("clinch","Exception while sending request: " + e.toString());
+			responseRC = -1;
+			responseMSG = e.toString();
+			NetLog.v("Exception while sending request: %s" , e.toString());
 			return false;
 		}
 		return true;

@@ -1,20 +1,12 @@
 package avk.viv.abs;
-import java.util.Timer;
 
-import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
-import android.widget.Toast;
 
 
 public class TrackerService extends Service implements Runnable {
@@ -64,19 +56,6 @@ public class TrackerService extends Service implements Runnable {
 		updateLocation.Start(context,this);
 		
 		return START_STICKY;
-	}
-	
-	public synchronized void  setLastLocation(LocationObj locationObj) {
-		NetLog.v("Tracker Service - setLastLocation...");
-		lastLocation = locationObj;
-	}
-	
-	public synchronized LocationObj getLocation() {
-		if ( lastLocation == null )
-			return null;
-		
-		NetLog.v("Status - returning location %s\n", lastLocation.toString());
-		return lastLocation;
 	}
 	
 	@Override

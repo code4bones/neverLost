@@ -6,7 +6,7 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/lbStatus"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -27,7 +27,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:lines="1" >
+        android:lines="1" android:singleLine="true">
 
         <requestFocus />
     </EditText>
@@ -137,6 +137,16 @@
             android:layout_alignLeft="@+id/lbTimeValue"
             android:text="0"
             android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+
+        <Button
+            android:id="@+id/btnShowGSM"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="14dp"
+            android:text="Показать данные GSM" />
 
     </RelativeLayout>
 

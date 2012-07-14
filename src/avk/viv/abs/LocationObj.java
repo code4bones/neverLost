@@ -3,7 +3,12 @@ package avk.viv.abs;
 public class LocationObj extends Object implements ILocationObj {
 
 	public String beaconID;
-	public String sStatus;
+	public String statusText;
+	public int    providerType;
+	public int	  updateCount;
+	
+	public LocationObj() {
+	}
 	
 	public String getURL() {
 		return null;

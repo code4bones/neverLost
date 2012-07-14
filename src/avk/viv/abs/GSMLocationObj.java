@@ -14,36 +14,38 @@ public class GSMLocationObj extends LocationObj implements ILocationObj {
 	public int mcc;
 	public int mnc;
 	public String sTime;
+	public String sName;
    	
     GSMLocationObj(String beaconID,Context context,String sStatus) {
 		
     	this.beaconID = beaconID;
-    	this.sStatus  = sStatus;
-    	
+    	this.statusText  = sStatus;
+    	this.providerType = GatewayUtil.kGSM;
 		TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 	    GsmCellLocation cellLocation = (GsmCellLocation)telephonyManager.getCellLocation();
     	String sOperator = telephonyManager.getNetworkOperator();
+	    this.sName = telephonyManager.getNetworkOperatorName();
 	    
-    	cid = cellLocation.getCid();
-        lac = cellLocation.getLac();
+    	this.cid = cellLocation.getCid();
+        this.lac = cellLocation.getLac();
         try {
-	        mcc = Integer.parseInt(sOperator.substring(0, 3));
-	        mnc = Integer.parseInt(sOperator.substring(3));
+	        this.mcc = Integer.parseInt(sOperator.substring(0, 3));
+	        this.mnc = Integer.parseInt(sOperator.substring(3));
         }
         catch (NumberFormatException e) 
         {
-      	  mcc=0;
-      	  mnc=0;
+      	  this.mcc=0;
+      	  this.mnc=0;
         };
 
         Date currentTime = new Date();
-		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HHH:mm:ss");
+		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
 		sTime = df.format(currentTime);
    	};
    	
 	public String getURL() {
 		String sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.saveLocation_Phone_GSM</name><index>1</index><param>%s^%d^%d^%d^%d^-%s^%s^%s</param></function></request>";
-	    return String.format(sRequest, beaconID,cid,lac,mcc,mnc,GatewayUtil.md5(GatewayUtil.deviceID),sStatus,sTime);
+	    return String.format(sRequest, beaconID,cid,lac,mcc,mnc,GatewayUtil.md5(GatewayUtil.deviceID),statusText,sTime);
 	}
     
 	public String getFile() {

@@ -10,10 +10,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 
-public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
+public class LocationTracker   {
 
 	public LocationManager gpsManager;
 	LocationListener gpsListener;
@@ -27,24 +28,29 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 	public GatewayUtil gatewayUtil;
 	
 	class CommonListener implements LocationListener {
+
+		public int updateCounter;
 		
 		public CommonListener() {
+			this.updateCounter = 0;
 		}
 		
 		public void onLocationChanged(Location location) {
-			NetLog.v("%s: Changed: %s\n", location.getProvider(),location.toString());
+
+			this.updateCounter++;
+
+			NetLog.v("%s: Changed(%d): %s\n", location.getProvider(),this.updateCounter,location.toString());
 
 			String beaconID = prefs.getString("beaconID", "0");
 			
-			
 			GatewayUtil gw = new GatewayUtil(context);
 			LocationObj locObj = new GPSOrNetworkLocationObj(beaconID,location,prefs.getString("statusText", "Нет Статуса..."));
+			locObj.updateCount = updateCounter;
 			
-			//if ( StatusActivity.updateHandler == null ) 
-			//StatusActivity.updateHandler = new StatusActivity.UpdateHandler();
-			
-			if ( StatusActivity.updateHandler != null )
-			StatusActivity.updateHandler.sendEmptyMessage(0);
+			if ( StatusActivity.updateHandler != null ) {
+				Message msg = StatusActivity.updateHandler.obtainMessage(locObj.providerType,locObj);
+				StatusActivity.updateHandler.sendMessage(msg);
+			}
 			
 			if ( gw.saveLocation(locObj) )
 				NetLog.v("%s: Failed to save location: %s",location.getProvider(),gw.responseMSG);
@@ -105,6 +111,11 @@ public class LocationTracker /*extends TimerTask*/ /*implements Runnable*/  {
 	    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,prefs.getString("statusText","Нет статуса..."));
 	    if ( !gatewayUtil.saveLocation(locObj) )
 	    	NetLog.v("Failed to save GSM location: %s",gatewayUtil.responseMSG);
-	    else NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
+	    else  { NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
+	    	if ( GsmStatusActivity.updateHandler != null ) {
+	    		Message msg = GsmStatusActivity.updateHandler.obtainMessage(GatewayUtil.kGSM, locObj);
+	    		GsmStatusActivity.updateHandler.sendMessage(msg);
+	    	} // updateHandler != null
+	    }
 	}
 }
