@@ -12,7 +12,7 @@ import android.content.SharedPreferences;
 
 public class OnBootReceiver extends BroadcastReceiver {
 
-	public static final long REPEAT_TIME = 1000 * 600;
+	//public static final long REPEAT_TIME = 1000 * 600;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -29,7 +29,7 @@ public class OnBootReceiver extends BroadcastReceiver {
 		     Calendar cal = Calendar.getInstance();
 		     cal.add(Calendar.SECOND, 1);
 		     service.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-						cal.getTimeInMillis(), REPEAT_TIME, pending);
+						cal.getTimeInMillis(), prefs.getInt("interval",10) * 60 * 1000, pending);
 				
 		     NetLog.v("%s : Service started while device boot completed.",this.getClass().getName());
 		}		

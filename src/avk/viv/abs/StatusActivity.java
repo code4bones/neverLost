@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -38,7 +39,8 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	 public TextView lbUpdatesValue;
 	 public TextView lbStatus;
 	 public Button   btnShowGSM;
-	 public static LocationObj lastLocation = null;
+	 public Button   btnGoogle;
+	 public static GPSOrNetworkLocationObj lastLocation = null;
 	 public static UpdateStatusHandler<StatusActivity,GPSOrNetworkLocationObj> updateHandler = null;
 	 
 	 
@@ -58,15 +60,8 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	 }
 	 
 	 public StatusActivity() {
-		 NetLog.v("STATUS ACTIVITY\n");
 	 }
 	 
-	 /*
-	public void getDirections(float latitude, float longitude) {
-	    launchIntent(new Intent(Intent.ACTION_VIEW,
-	        Uri.parse("http://maps.google.com/maps?f=d&daddr=" + latitude + "," + longitude)));
-  	}	  
-  	*/
 	 
 	 public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
@@ -80,9 +75,9 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	        lbTimeValue = (TextView)findViewById(R.id.lbTimeValue);
 	        lbUpdatesValue = (TextView)findViewById(R.id.lbUpdatesValue);
 	        btnShowGSM = (Button)findViewById(R.id.btnShowGSM);
+	        btnGoogle  = (Button)findViewById(R.id.btnGoogle);
 	        
 	        StatusActivity.updateHandler = new UpdateStatusHandler<StatusActivity,GPSOrNetworkLocationObj>(this);
-	        NetLog.v("Status Handler Created...\n");	
 
 	        btnShowGSM.setOnClickListener( new View.OnClickListener() {
 				public void onClick(View v) {
@@ -91,23 +86,39 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 				}
 			});
 	        
+	        btnGoogle.setOnClickListener(new View.OnClickListener() {
+				
+				public void onClick(View v) {
+					String sURL = String.format("https://maps.google.ru/maps?f=q&source=s_q&hl=ru&q=%f,%f", lastLocation.location.getLatitude(),lastLocation.location.getLongitude());
+				    Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse(sURL));
+	                startActivityForResult(i, 0);
+				}
+			});
+	        
 	        if ( lastLocation != null ) {
 	        	updateUI((GPSOrNetworkLocationObj)lastLocation);
-	        	NetLog.v("StatusActivity - using last location\n");
+	        	NetLog.Toast(this,"Координаты последнего обновления...");
 	        } else {
-	        	LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-	        	Criteria criteria = new Criteria();
-	        	criteria.setAccuracy( Criteria.ACCURACY_FINE);
-	        	criteria.setAltitudeRequired( false );
-	        	criteria.setBearingRequired( false );
-	        	criteria.setCostAllowed( true );
-	        	criteria.setPowerRequirement( Criteria.POWER_LOW);
-	        	String provider = lm.getBestProvider( criteria, true);	        	
-	        	Location location = lm.getLastKnownLocation(provider);
-
-	        	SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
-	        	updateUI(new GPSOrNetworkLocationObj(prefs.getString("beaconID", ""),location,prefs.getString("statusText", "")));
-	        }
+	   		 	LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
+	        	String bestProvider = LocationObj.getBestProvider(lm);
+	   		 	Location location = lm.getLastKnownLocation(bestProvider);
+	        	// best is bastard !
+	   		 	if ( location == null ) {
+	        		String oldProvider = bestProvider;
+	   		 		if ( bestProvider.equals(LocationManager.GPS_PROVIDER )) bestProvider = LocationManager.NETWORK_PROVIDER;
+	        		else bestProvider = LocationManager.NETWORK_PROVIDER;
+	        		location = lm.getLastKnownLocation(bestProvider);
+	   		 		NetLog.Toast(this,"%s не доступен, использую %s", oldProvider,bestProvider);
+	        	}
+	   		 	
+	        	if ( location != null  ) {
+	        		NetLog.Toast(this, "Координаты/%s", bestProvider);
+	        		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+	        		updateUI(new GPSOrNetworkLocationObj(prefs.getString("beaconID", ""),location,prefs.getString("statusText", "")));
+	        	} else {
+	        		NetLog.Toast(this, "Ошибка получения координат через %s",bestProvider);
+	        	}
+	        } // lastLocation == null
 	 }
 
 		@Override

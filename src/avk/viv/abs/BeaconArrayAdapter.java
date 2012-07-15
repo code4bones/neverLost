@@ -13,13 +13,14 @@ public class BeaconArrayAdapter extends ArrayAdapter<BeaconObj> {
 
 	private Context context;
 	private BeaconObj[] beacons;
-	
+	private int		textColor;
 
 	public BeaconArrayAdapter(Context context, int textViewResourceId,
-			BeaconObj[] objects) {
+			BeaconObj[] objects,int textColor) {
 		super(context, textViewResourceId, objects);
 		this.context = context;
 		this.beacons = objects;
+		this.textColor = textColor;
 	}
 	
 
@@ -38,16 +39,18 @@ public class BeaconArrayAdapter extends ArrayAdapter<BeaconObj> {
 	@Override
 	public View getView(int position,View convertView,ViewGroup parent) {
 		TextView label = new TextView(this.context);
-		label.setTextColor(Color.BLACK);
+		label.setTextColor(textColor);
 		label.setText(beacons[position].name);
+		label.setTextSize(15);
 		return label;
 	}
 
 	@Override
 	public View getDropDownView(int position,View convertView,ViewGroup parent) {
 		TextView label = new TextView(context);
-        label.setTextColor(Color.BLACK);
+        label.setTextColor(textColor);
         label.setText(beacons[position].name);
+		label.setTextSize(20);
         return label;
 	}
 }

@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -67,8 +68,8 @@ public class NeverLostActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        NetLog.v("ACTIVITY STARTED\n");
         
+		
 		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
         isServiceBound = false;
         
@@ -150,7 +151,7 @@ public class NeverLostActivity extends Activity {
 					        return;
 						}
 						BeaconObj[] beacons = beaconList.toArray(new BeaconObj[beaconList.size()]);
-						BeaconArrayAdapter ad = new BeaconArrayAdapter(NeverLostActivity.this, android.R.layout.simple_spinner_item, beacons);
+						BeaconArrayAdapter ad = new BeaconArrayAdapter(NeverLostActivity.this, android.R.layout.simple_spinner_item, beacons,Color.BLACK);
 						ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 						spBeacons.setAdapter(ad);	
 						spBeacons.setPrompt("Выберете...");
@@ -173,17 +174,28 @@ public class NeverLostActivity extends Activity {
 				// возможно, не лучшее место для пост-инициализации бикона, потом перенесу в активацию...
 				currentBeacon.login = txtLogin.getText().toString();
 				currentBeacon.password = txtPassword.getText().toString();
-				currentBeacon.interval = NeverLostActivity.gatewayUtil.getFrequency(obj.uid);
 				currentBeacon.selectedBeaconIndex = position;
+				currentBeacon.interval = NeverLostActivity.gatewayUtil.getFrequency(obj.uid);
 				if ( currentBeacon.interval <= 0 ) {
 					Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG,Toast.LENGTH_SHORT).show();
+					// 10 минуточек по умолчанию
 					currentBeacon.interval = 10;
 				}
 				
 				lbInterval.setText(String.format("Период обновления: %d мин.",currentBeacon.interval));
 		        lbInterval.setTextColor(Color.WHITE);
 		        
-			
+		        // авторизируемся асинхронно
+		        onConnectedAction task = new onConnectedAction(NeverLostActivity.this,"Подождите...","Идет авторизация телефона %s",currentBeacon.name) {
+		           // и сразу активируем выбранные биконищще
+				    public void onSuccess() { 
+		        	if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) ) 
+				    	NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
+				     else 
+				    	NetLog.Toast(NeverLostActivity.this,"Телефон Активирован: %s",currentBeacon.name);
+				    } // onSuccess
+				   }; // onConnectedActoin
+		        task.execute((Void[])null);
 			}
 			public void onNothingSelected(AdapterView<?> arg) {
 			}
@@ -255,12 +267,15 @@ public class NeverLostActivity extends Activity {
 		}
 		
 		// если есть предыдущее состояние - восстанавливаем значение в спиннере
-		if ( isRestoreState ) 
-			bnFetchBeacons.performClick();
+		if ( isRestoreState ) { 
+			onConnectedAction task = new onConnectedAction(this,"Подождите","Идет проверка сети...") {
+				public void onSuccess() {
+						bnFetchBeacons.performClick();
+				} // onSuccess
+			};// onConnectedAction
+			task.execute((Void[])null);
+		} // isRestoreState		
 		
-		statusIntent = new Intent(this, StatusActivity.class);
-		//StatusActivity.updateHandler = new UpdateStatusHandler(this);
-		//ComponentName a = statusIntent.resolveActivity(this.getPackageManager());
 	} // onCreate
 
 	boolean isServiceRunning() {
@@ -305,16 +320,11 @@ public class NeverLostActivity extends Activity {
 		    cal.add(Calendar.SECOND, 1);
 		    
 		    service.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-						cal.getTimeInMillis(), OnBootReceiver.REPEAT_TIME, pending);
-	      	
+						cal.getTimeInMillis(), currentBeacon.interval * 60 * 1000, pending);
 		    // Авторизация активного телефона
-		    if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) ) {
-		    	NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
-				Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG ,Toast.LENGTH_SHORT).show();
-		    } else {
-	      		Toast.makeText(NeverLostActivity.this, "Сервис запущен...",Toast.LENGTH_SHORT).show();
+	      		NetLog.Toast(NeverLostActivity.this, "Сервис запущен...интервал %d мин",currentBeacon.interval);
 	      		NetLog.v("Activation: %d",gatewayUtil.responseRC);
-	      	}
+	      	
 			edit.putBoolean("active",true);
 		} else {
 			doUnbindService();
@@ -375,19 +385,16 @@ public class NeverLostActivity extends Activity {
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	        case R.id.miStatus:
-	        	//Intent myIntent2 = new Intent(this, StatusActivity.class);
-                //startActivityForResult(statusIntent, 0);
-                if ( isServiceRunning() )
-                	this.startActivityFromChild(this, statusIntent, 0);
-                else 
+                if ( isServiceRunning() ) {
+                	Intent myIntent1 = new Intent(this, StatusActivity.class);
+                	this.startActivityFromChild(this, myIntent1, 0);
+                } else 
                 	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
 	            return true;
-	      /* Пока не ясно как прикрутить карту, какой-то гугуль-код нужен....
 	        case R.id.miSeatMate:
-	        	//Intent myIntent3 = new Intent(this, StatusActivity.class);
-                //startActivityForResult(myIntent3, 0);
+	        	Intent myIntent3 = new Intent(this, SeatmateActivity.class);
+                startActivityForResult(myIntent3, 0);
 	            return true;
-	            */
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }

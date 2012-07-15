@@ -13,11 +13,13 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -47,9 +49,12 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -116,7 +121,7 @@ public class GatewayUtil {
 
 		ArrayList<BeaconObj> list = new ArrayList<BeaconObj>();
 		   
-		String sRequest = "http://shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG_2.get_seatmates</name><index>1</index><param>%s</param></function></request>";
+		String sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG_2.get_seatmates</name><index>1</index><param>%s</param></function></request>";
 		String sURL = String.format(sRequest, beaconID);
 
 		if ( !sendRequest(sURL) )
@@ -162,7 +167,7 @@ public class GatewayUtil {
     	String offlineFile = Environment.getExternalStorageDirectory() + "/LocationHistory.log";
 	  
     	try {
-		    if ( isConnected() ) {
+		    if ( GatewayUtil.isConnected(context) ) {
 		    	
 		    	LocationObj locObj = (LocationObj)locationObj;
 		    	
@@ -374,13 +379,31 @@ public class GatewayUtil {
 		return true;
 	}
 	
-	public boolean isConnected() {
-	    ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
- 		if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected())
- 			return true;
- 			return false;
-	} 
+	static public boolean isConnected(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+ 		NetworkInfo ni = cm.getActiveNetworkInfo();
+ 		boolean isConnected = (ni != null && ni.isConnectedOrConnecting() && lookupHost("shluz.tygdenakarte.ru") != -1)?true:false;
+ 		return isConnected;
+	}
+	
 
+	public static int lookupHost(String hostname) {
+		InetAddress inetAddress;
+		try {
+		    inetAddress = InetAddress.getByName(hostname);
+		} catch (UnknownHostException e) {
+		    return -1;
+		}
+		byte[] addrBytes;
+		int addr;
+		addrBytes = inetAddress.getAddress();
+		addr = ((addrBytes[3] & 0xff) << 24)
+		        | ((addrBytes[2] & 0xff) << 16)
+		        | ((addrBytes[1] & 0xff) << 8)
+		        |  (addrBytes[0] & 0xff);
+		return addr;
+	}
+	
 	static public String md5(String in) 
 	{
 		MessageDigest digest;
@@ -403,3 +426,45 @@ public class GatewayUtil {
 
 }
 
+/*
+private boolean displayMap(int cellID, int lac) throws Exception
+{
+String urlString = "http://www.google.com/glm/mmap";
+//---open a connection to Google Maps API---
+URL url = new URL(urlString);
+URLConnection conn = url.openConnection();
+HttpURLConnection httpConn = (HttpURLConnection) conn;
+httpConn.setRequestMethod("POST");
+httpConn.setDoOutput(true);
+httpConn.setDoInput(true);
+httpConn.connect();
+//---write some custom data to Google Maps API---
+OutputStream outputStream = httpConn.getOutputStream();
+WriteData(outputStream, cellID, lac);
+//---get the response---
+InputStream inputStream = httpConn.getInputStream();
+DataInputStream dataInputStream = new DataInputStream(inputStream);
+//---interpret the response obtained---
+dataInputStream.readShort();
+dataInputStream.readByte();
+int code = dataInputStream.readInt();
+if (code == 0) {
+double lat = (double) dataInputStream.readInt() / 1000000D;
+double lng = (double) dataInputStream.readInt() / 1000000D;
+dataInputStream.readInt();
+dataInputStream.readInt();
+dataInputStream.readUTF();
+//---display Google Maps---
+String uriString = "geo:" + lat
++ "," + lng;
+Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+Uri.parse(uriString));
+startActivity(intent);
+return true;
+}
+else
+{
+return false;
+}
+}
+ */

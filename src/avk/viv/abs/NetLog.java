@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 public class NetLog {
 
@@ -73,4 +74,8 @@ public class NetLog {
 	    dlgAlert.create().show();
 	}
 	
+	public static void Toast(Context ctx,String fmt, Object ... args) {
+		String msg = String.format(fmt, args);
+		Toast.makeText(ctx,msg,Toast.LENGTH_SHORT).show();
+	}
 };

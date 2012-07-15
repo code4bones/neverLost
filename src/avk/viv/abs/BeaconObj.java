@@ -21,7 +21,8 @@ public class BeaconObj extends Object {
 	
 	@Override
 	public String toString() {
-		String str = String.format("Login: %s, Password: %s, Name: %s, Interval: %d,beaconID: %s,LAT:%f,LNG:%f,ACC:%f,DATE:%s,STATUS:%s", login,password,interval,name,uid,latitude,longitude,accuracy,date,status);
+		String str = String.format("Login: %s, Password: %s, beaconName: %s, beaconID: %s,Interval: %d,LAT:%f,LNG:%f,ACC:%f,DATE:%s,STATUS:%s",
+				login,password,name,uid,interval,latitude,longitude,accuracy,date,status);
 		return str;
 	}
 	

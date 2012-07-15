@@ -9,7 +9,7 @@ import android.location.LocationManager;
 
 public class GPSOrNetworkLocationObj extends LocationObj implements ILocationObj {
 	
-	public Location location;
+	public Location location = null;
 	public boolean isGPS;
 	
 	public GPSOrNetworkLocationObj(String beaconID,Location location,String sStatus) {
@@ -17,7 +17,8 @@ public class GPSOrNetworkLocationObj extends LocationObj implements ILocationObj
 		this.beaconID = beaconID;
 		this.location = location;
 		this.statusText  = sStatus;
-		this.isGPS  = location.getProvider().equals(LocationManager.GPS_PROVIDER);
+		if ( this.location !=  null )
+			this.isGPS  = this.location.getProvider().equals(LocationManager.GPS_PROVIDER);
 		this.providerType = isGPS?GatewayUtil.kGPS:GatewayUtil.kWiFi;
 	}
 	
