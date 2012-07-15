@@ -40,7 +40,6 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class NeverLostActivity extends Activity {
     /** Called when the activity is first created. */
-    //public StateListener stateListener = null;
 	public static GatewayUtil gatewayUtil = null;
     
 	// GUI
@@ -50,6 +49,7 @@ public class NeverLostActivity extends Activity {
 	public EditText txtPassword;
 	public Spinner  spBeacons;
 	public TextView lbInterval;
+	public EditText txtStatusText;
 	public ToggleButton tgActive;
 	static public BeaconObj currentBeacon;
     
@@ -69,7 +69,7 @@ public class NeverLostActivity extends Activity {
         
         NetLog.v("ACTIVITY STARTED\n");
         
-        
+		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
         isServiceBound = false;
         
         // GUI Initialization
@@ -80,16 +80,16 @@ public class NeverLostActivity extends Activity {
         this.tgActive = (ToggleButton)findViewById(R.id.tgActive);
         this.spBeacons = (Spinner)findViewById(R.id.spBeacons);
         this.bnFetchBeacons = (Button)findViewById(R.id.sbFetchBeacons);
+        this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
         
         // пока не залогинены - нахер
         this.tgActive.setEnabled(false);
         this.spBeacons.setEnabled(false);
         this.lbInterval.setTextColor(Color.DKGRAY);
-
+        
         currentBeacon = new BeaconObj();
         isActive = false;
         
-		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
 		// Поднимаем старые настройки
 		if ( prefs.getString("login", null) != null )
 		{
@@ -101,6 +101,7 @@ public class NeverLostActivity extends Activity {
 			currentBeacon.name     = prefs.getString("beaconName", "");
 			currentBeacon.interval = prefs.getInt("interval", 10);
 			currentBeacon.selectedBeaconIndex = prefs.getInt("selectedBeaconIndex", 0);
+			currentBeacon.status = prefs.getString("statusText", "");
 			NetLog.v("GUI: login = %s,password = %s,beaconID = %s,beaconName = %s interval = %d,idx = %d",
 					currentBeacon.login,
 					currentBeacon.password,
@@ -112,6 +113,7 @@ public class NeverLostActivity extends Activity {
 		
 		this.txtLogin.setText(currentBeacon.login);
 		this.txtPassword.setText(currentBeacon.password);
+        this.txtStatusText.setText(currentBeacon.status);
         
 		// HTTP Gateway Utility Object
         gatewayUtil = new GatewayUtil(this);
@@ -168,6 +170,7 @@ public class NeverLostActivity extends Activity {
 			public void onItemSelected(AdapterView<?> item,View view,int position,long id) {
 				BeaconObj obj = (BeaconObj)item.getAdapter().getItem(position);
 				currentBeacon = obj;
+				// возможно, не лучшее место для пост-инициализации бикона, потом перенесу в активацию...
 				currentBeacon.login = txtLogin.getText().toString();
 				currentBeacon.password = txtPassword.getText().toString();
 				currentBeacon.interval = NeverLostActivity.gatewayUtil.getFrequency(obj.uid);
@@ -180,16 +183,6 @@ public class NeverLostActivity extends Activity {
 				lbInterval.setText(String.format("Период обновления: %d мин.",currentBeacon.interval));
 		        lbInterval.setTextColor(Color.WHITE);
 		        
-		        // Сохранимся....
-				SharedPreferences prefs = NeverLostActivity.this.getSharedPreferences("prefs",1);
-				SharedPreferences.Editor edit = prefs.edit();
-				edit.putString("beaconID",currentBeacon.uid);
-				edit.putString("beaconName",currentBeacon.name);
-				edit.putString("login", currentBeacon.login);
-				edit.putString("password", currentBeacon.password);
-				edit.putInt("interval",currentBeacon.interval);
-				edit.putInt("selectedBeaconIndex", currentBeacon.selectedBeaconIndex);
-				edit.commit();
 			
 			}
 			public void onNothingSelected(AdapterView<?> arg) {
@@ -213,9 +206,10 @@ public class NeverLostActivity extends Activity {
                 	txtEdit.requestFocus();
                 	if ( txtEdit == txtLogin ) 
                 	 Toast.makeText(NeverLostActivity.this, "Введите логин!",Toast.LENGTH_SHORT).show();
-                	else 
+                	else if ( txtEdit == txtPassword )
                    	 Toast.makeText(NeverLostActivity.this, "Введите пароль!",Toast.LENGTH_SHORT).show();
                 	// prevent from resign
+                	return fOk;
                 } // if
                 return fOk;
 			} // onKey
@@ -225,11 +219,11 @@ public class NeverLostActivity extends Activity {
 		// Остановка/Запуск сервиса
 		CompoundButton.OnCheckedChangeListener onChangeActive = new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton arg0, boolean fActive) {
-				NetLog.v("clinch","Set service state to %d\n",fActive);
 				txtLogin.setEnabled(!fActive);
 				txtLogin.setClickable(!fActive);
 				txtPassword.setEnabled(!fActive);
 				txtPassword.setClickable(!fActive);
+				txtStatusText.setEnabled(!fActive);
 				bnFetchBeacons.setEnabled(!fActive);
 				spBeacons.setEnabled(!fActive);
 				controlService(fActive);
@@ -239,11 +233,9 @@ public class NeverLostActivity extends Activity {
 		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder binder) {
 				 trackerService = ((TrackerService.TrackerBinder)binder).getService();
-				 NetLog.v("Service Connected\n");
 			}
 			public void onServiceDisconnected(ComponentName arg0) {
 				 trackerService = null;
-				 NetLog.v("Service Disconnected...\n");
 			}
 		};
 		
@@ -266,15 +258,15 @@ public class NeverLostActivity extends Activity {
 		if ( isRestoreState ) 
 			bnFetchBeacons.performClick();
 		
-		// наш статус
 		statusIntent = new Intent(this, StatusActivity.class);
+		//StatusActivity.updateHandler = new UpdateStatusHandler(this);
+		//ComponentName a = statusIntent.resolveActivity(this.getPackageManager());
 	} // onCreate
 
 	boolean isServiceRunning() {
 		String srvName = TrackerService.class.getName();
 		ActivityManager mgr = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
 		for ( RunningServiceInfo srv : mgr.getRunningServices(Integer.MAX_VALUE)) {
-			NetLog.v("Service: %s",srv.service.getClassName());
 			if ( srvName.equals(srv.service.getClassName()))
 				return true;
 		}
@@ -283,16 +275,14 @@ public class NeverLostActivity extends Activity {
 	
 	void doBindService() {
 		if ( bindService(new Intent(this,TrackerService.class),serviceConnection,Context.BIND_AUTO_CREATE) ) {
-			NetLog.v("Service successfuly binded...\n");
 			isServiceBound = true;
 		} else {
-			NetLog.v("Failed to bind service\n");
+			NetLog.MsgBox(this, "Ошибка","Не удалось получить доступ к сервису");
 		}
 	}
 	
 	void doUnbindService() {
 		if ( isServiceBound ) {
-			NetLog.v("Unbinding service...\n");
 			unbindService(serviceConnection);
 			isServiceBound = false;
 		}
@@ -307,6 +297,9 @@ public class NeverLostActivity extends Activity {
 	    PendingIntent pending = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		
 		if ( fActive ) {
+			// загоняем наш бикончик в префы
+			saveBeacon();
+			// пошло поехало
 			doBindService();
 		    Calendar cal = Calendar.getInstance();
 		    cal.add(Calendar.SECOND, 1);
@@ -315,9 +308,10 @@ public class NeverLostActivity extends Activity {
 						cal.getTimeInMillis(), OnBootReceiver.REPEAT_TIME, pending);
 	      	
 		    // Авторизация активного телефона
-		    if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) )
+		    if ( !gatewayUtil.Authorization(currentBeacon.login,currentBeacon.password, currentBeacon.uid) ) {
+		    	NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
 				Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG ,Toast.LENGTH_SHORT).show();
-	      	else {
+		    } else {
 	      		Toast.makeText(NeverLostActivity.this, "Сервис запущен...",Toast.LENGTH_SHORT).show();
 	      		NetLog.v("Activation: %d",gatewayUtil.responseRC);
 	      	}
@@ -331,6 +325,23 @@ public class NeverLostActivity extends Activity {
 		}
 		edit.commit();
 		return true;
+	}
+	
+	void saveBeacon() {
+		// лучше места не нашел...можно было повесить на Enter - но....
+		currentBeacon.status = txtStatusText.getText().toString();
+
+        // Сохранимся....
+		SharedPreferences prefs = NeverLostActivity.this.getSharedPreferences("prefs",1);
+		SharedPreferences.Editor edit = prefs.edit();
+		edit.putString("beaconID",currentBeacon.uid);
+		edit.putString("beaconName",currentBeacon.name);
+		edit.putString("login", currentBeacon.login);
+		edit.putString("password", currentBeacon.password);
+		edit.putInt("interval",currentBeacon.interval);
+		edit.putInt("selectedBeaconIndex", currentBeacon.selectedBeaconIndex);
+		edit.putString("statusText",currentBeacon.status);
+		edit.commit();
 	}
 	
 	boolean validateLogin(String sLogin,String sPassword) {
@@ -366,7 +377,10 @@ public class NeverLostActivity extends Activity {
 	        case R.id.miStatus:
 	        	//Intent myIntent2 = new Intent(this, StatusActivity.class);
                 //startActivityForResult(statusIntent, 0);
-                this.startActivityFromChild(this, statusIntent, 0);
+                if ( isServiceRunning() )
+                	this.startActivityFromChild(this, statusIntent, 0);
+                else 
+                	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
 	            return true;
 	      /* Пока не ясно как прикрутить карту, какой-то гугуль-код нужен....
 	        case R.id.miSeatMate:

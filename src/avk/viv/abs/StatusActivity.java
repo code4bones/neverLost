@@ -11,6 +11,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,7 +29,7 @@ import android.widget.TextView;
 
 
 
-public class StatusActivity extends Activity {
+public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNetworkLocationObj> {
 
 	 public TextView lbLatitudeValue;
 	 public TextView lbLongitudeValue;
@@ -34,86 +37,78 @@ public class StatusActivity extends Activity {
 	 public TextView lbTimeValue;
 	 public TextView lbUpdatesValue;
 	 public TextView lbStatus;
-	 public EditText txtStatus;
 	 public Button   btnShowGSM;
 	 public static LocationObj lastLocation = null;
-	 public static UpdateHandler updateHandler = null;
+	 public static UpdateStatusHandler<StatusActivity,GPSOrNetworkLocationObj> updateHandler = null;
 	 
-	 public class UpdateHandler extends Handler {
-		 @Override
-		 public void handleMessage(android.os.Message msg) {
-			 final LocationObj locationObj = (LocationObj)msg.obj;
-				runOnUiThread( new Runnable() {
-					public void run() {
-						GPSOrNetworkLocationObj locObj = (GPSOrNetworkLocationObj)(locationObj);
-						
-						SimpleDateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
-						String sStatus = "Статус / ";
-						sStatus = sStatus.concat(locationObj.providerType == GatewayUtil.kGPS?"GPS":"WiFi");
-						
-						lbStatus.setText(sStatus);
-						lbLatitudeValue.setText(String.valueOf(locObj.location.getLatitude()));
-						lbLongitudeValue.setText(String.valueOf(locObj.location.getLongitude()));
-						lbAccuracyValue.setText(String.valueOf(locObj.location.getAccuracy()));
-						lbTimeValue.setText(String.valueOf(df.format(new Date(locObj.location.getTime()))));
-						lbUpdatesValue.setText(String.valueOf(locObj.updateCount));
-						
-						
-						NetLog.v("UpdateStatus %s\n",sStatus);
-					}
-				  });
-		 }
-	 };
+	 
+	 public void updateUI(GPSOrNetworkLocationObj locObj) {
+
+		 	lastLocation = locObj;
+			SimpleDateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+			String sStatus = "Статус / ";
+			sStatus = sStatus.concat(locObj.providerType == GatewayUtil.kGPS?"GPS":"WiFi");
+			
+			lbLatitudeValue.setText(String.valueOf(locObj.location.getLatitude()));
+			lbLongitudeValue.setText(String.valueOf(locObj.location.getLongitude()));
+			lbAccuracyValue.setText(String.valueOf(locObj.location.getAccuracy()));
+			lbTimeValue.setText(String.valueOf(df.format(new Date(locObj.location.getTime()))));
+			lbUpdatesValue.setText(String.valueOf(locObj.updateCount));
+			lbStatus.setText(sStatus);
+	 }
+	 
+	 public StatusActivity() {
+		 NetLog.v("STATUS ACTIVITY\n");
+	 }
+	 
+	 /*
+	public void getDirections(float latitude, float longitude) {
+	    launchIntent(new Intent(Intent.ACTION_VIEW,
+	        Uri.parse("http://maps.google.com/maps?f=d&daddr=" + latitude + "," + longitude)));
+  	}	  
+  	*/
 	 
 	 public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 	        setContentView(R.layout.statistics);
 	        
-	        
-	        
+	        	        
 	        lbStatus = (TextView)findViewById(R.id.lbStatus);
 	        lbLatitudeValue = (TextView)findViewById(R.id.lbLatitudeValue);
 	        lbLongitudeValue = (TextView)findViewById(R.id.lbLongitudeValue);
 	        lbAccuracyValue = (TextView)findViewById(R.id.lbAccuracyValue);
 	        lbTimeValue = (TextView)findViewById(R.id.lbTimeValue);
 	        lbUpdatesValue = (TextView)findViewById(R.id.lbUpdatesValue);
-	        txtStatus = (EditText)findViewById(R.id.txtStatus);
 	        btnShowGSM = (Button)findViewById(R.id.btnShowGSM);
 	        
-	        SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
-	        txtStatus.setText(prefs.getString("statusText", ""));
-	        txtStatus.setHint("Стаус на карте");
+	        StatusActivity.updateHandler = new UpdateStatusHandler<StatusActivity,GPSOrNetworkLocationObj>(this);
+	        NetLog.v("Status Handler Created...\n");	
 
-	        StatusActivity.updateHandler = new UpdateHandler();
-	        
 	        btnShowGSM.setOnClickListener( new View.OnClickListener() {
-				
 				public void onClick(View v) {
 		        	Intent myIntent2 = new Intent(StatusActivity.this, GsmStatusActivity.class);
 	                startActivityForResult(myIntent2, 0);
 				}
 			});
 	        
-	        txtStatus.setOnKeyListener( new OnKeyListener() {
+	        if ( lastLocation != null ) {
+	        	updateUI((GPSOrNetworkLocationObj)lastLocation);
+	        	NetLog.v("StatusActivity - using last location\n");
+	        } else {
+	        	LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
+	        	Criteria criteria = new Criteria();
+	        	criteria.setAccuracy( Criteria.ACCURACY_FINE);
+	        	criteria.setAltitudeRequired( false );
+	        	criteria.setBearingRequired( false );
+	        	criteria.setCostAllowed( true );
+	        	criteria.setPowerRequirement( Criteria.POWER_LOW);
+	        	String provider = lm.getBestProvider( criteria, true);	        	
+	        	Location location = lm.getLastKnownLocation(provider);
 
-				public boolean onKey(View v, int keyCode, KeyEvent event) {
-					if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-					
-						String sText = txtStatus.getText().toString();
-						SharedPreferences prefs = StatusActivity.this.getSharedPreferences("prefs", 1);
-						SharedPreferences.Editor edit = prefs.edit();
-						edit.putString("statusText", sText);
-						edit.commit();
-						NetLog.MsgBox(StatusActivity.this,"Статус сохранен...",sText);
-						return true;
-					} // if
-					return false;
-				} // onKey
-	        }); // onKeyListener
-	        
-	        NetLog.v("Status Handler Created...\n");	
-	        
-	    }
+	        	SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+	        	updateUI(new GPSOrNetworkLocationObj(prefs.getString("beaconID", ""),location,prefs.getString("statusText", "")));
+	        }
+	 }
 
 		@Override
 		public boolean onCreateOptionsMenu(Menu menu) {
@@ -139,5 +134,6 @@ public class StatusActivity extends Activity {
 		protected void onDestroy() {
 			super.onDestroy();
 		}
+
 		
 }

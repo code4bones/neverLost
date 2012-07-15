@@ -52,9 +52,11 @@ public class LocationTracker   {
 				StatusActivity.updateHandler.sendMessage(msg);
 			}
 			
-			if ( gw.saveLocation(locObj) )
+			if ( !gw.saveLocation(locObj) )
 				NetLog.v("%s: Failed to save location: %s",location.getProvider(),gw.responseMSG);
-		
+			else
+				NetLog.v("%s: Location saved...\n",location.getProvider());
+			
 			gpsManager.removeUpdates(gpsListener);
 			wifiManager.removeUpdates(wifiListener);
 		}

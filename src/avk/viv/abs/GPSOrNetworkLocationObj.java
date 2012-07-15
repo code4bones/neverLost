@@ -13,7 +13,7 @@ public class GPSOrNetworkLocationObj extends LocationObj implements ILocationObj
 	public boolean isGPS;
 	
 	public GPSOrNetworkLocationObj(String beaconID,Location location,String sStatus) {
-
+		
 		this.beaconID = beaconID;
 		this.location = location;
 		this.statusText  = sStatus;

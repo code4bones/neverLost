@@ -13,24 +13,6 @@
         android:gravity="center_horizontal"
         android:text="Статус"
         android:textAppearance="?android:attr/textAppearanceLarge" android:paddingTop="20px"/>
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="20px"
-        android:text="Подпись на карте"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <EditText
-        android:id="@+id/txtStatus"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:lines="1" android:singleLine="true">
-
-        <requestFocus />
-    </EditText>
 
     <RelativeLayout
         android:layout_width="fill_parent"

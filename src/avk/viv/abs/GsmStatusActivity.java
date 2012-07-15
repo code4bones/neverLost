@@ -1,17 +1,14 @@
 package avk.viv.abs;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.widget.TextView;
 
 
-public class GsmStatusActivity extends Activity {
+public class GsmStatusActivity extends Activity implements IUpdateStatusUI<GSMLocationObj> {
 
-	 public static GSMUpdateHandler updateHandler = null;
+	 public static UpdateStatusHandler<GsmStatusActivity,GSMLocationObj> updateHandler = null;
 	 public TextView lbCidValue;
 	 public TextView lbLacValue;
 	 public TextView lbMccValue;
@@ -19,27 +16,17 @@ public class GsmStatusActivity extends Activity {
 	 public TextView lbTimeValue;
 	 
 	 
-	 public class GSMUpdateHandler extends Handler {
-		 @Override
-		 public void handleMessage(Message msg) {
-			 final LocationObj locationObj = (LocationObj)msg.obj;
-				runOnUiThread( new Runnable() {
-					public void run() {
-						GSMLocationObj locObj = (GSMLocationObj)locationObj;
-							
-						lbCidValue.setText(String.valueOf(locObj.cid));
-						lbLacValue.setText(String.valueOf(locObj.lac));
-						lbMccValue.setText(String.format("%d/%d", locObj.mcc,locObj.mnc));
-						lbNameValue.setText(locObj.sName);
-						lbNameValue.setText(locObj.sName);
-						lbTimeValue.setText(locObj.sTime);
-						
-						NetLog.v("GSM UpdateStatus %s\n",locObj.sTime);
-					}
-				  });
-		 }
-	 }; // class Update Handler
-
+	 public void updateUI(GSMLocationObj locObj) {
+			
+			lbCidValue.setText(String.valueOf(locObj.cid));
+			lbLacValue.setText(String.valueOf(locObj.lac));
+			lbMccValue.setText(String.format("%d/%d", locObj.mcc,locObj.mnc));
+			lbNameValue.setText(locObj.sName);
+			lbNameValue.setText(locObj.sName);
+			lbTimeValue.setText(locObj.sTime);
+			
+			NetLog.v("GSM UpdateStatus %s\n",locObj.sTime);
+	 }
 	 
 	 public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
@@ -50,6 +37,9 @@ public class GsmStatusActivity extends Activity {
 	        lbMccValue = (TextView)findViewById(R.id.lbMccValue);
 	        lbNameValue= (TextView)findViewById(R.id.lbNameValue);
 	        lbTimeValue= (TextView)findViewById(R.id.lbTimeValue);
-	        GsmStatusActivity.updateHandler = new GSMUpdateHandler();
+	        GsmStatusActivity.updateHandler = new UpdateStatusHandler<GsmStatusActivity,GSMLocationObj>(this);
+
+        	SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+        	updateUI(new GSMLocationObj(prefs.getString("beaconID", ""),this,prefs.getString("statusText", "")));
 	 }	 
 }

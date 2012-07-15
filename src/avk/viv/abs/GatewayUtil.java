@@ -84,7 +84,7 @@ public class GatewayUtil {
 	   }
 	    else {
 	        sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.phone_authorization</name><index></index><param>%s^%s^%s^-%s</param></function></request>";
-	        sURL = String.format(sRequest,login,pass,beaconID,GatewayUtil.deviceID);
+	        sURL = String.format(sRequest,login,pass,beaconID,GatewayUtil.md5(GatewayUtil.deviceID));
 	    }
 		
 		if ( sendRequest(sURL) == false )

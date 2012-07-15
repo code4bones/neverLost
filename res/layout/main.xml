@@ -112,29 +112,22 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.94"
         android:ems="10" android:lines="1" android:maxLines="1" android:singleLine="true" android:hint="Статус на карте..."/>
-
+
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="15.16"
-        android:gravity="bottom|fill"
-        android:orientation="horizontal"
-        android:paddingTop="100px" >
-
-        <TextView
-            android:id="@+id/lbActive"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.94"
-            android:gravity="center_vertical"
-            android:text="Состояние"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_weight="18.21"
+        android:orientation="vertical"
+        android:gravity="right|center_vertical" android:paddingTop="30dp">
+        android:paddingTop="10dp" >
+
+        
 
         <ToggleButton
             android:id="@+id/tgActive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="right|center_vertical"
+            android:paddingRight="20dp"
             android:text="ToggleButton" />
     </LinearLayout>
 
