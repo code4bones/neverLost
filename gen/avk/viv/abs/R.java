@@ -40,11 +40,10 @@ public final class R {
         public static final int lbTimeValue=0x7f06000a;
         public static final int lbTitle=0x7f06000d;
         public static final int lbVersion=0x7f06000c;
-        public static final int miRefresh=0x7f060026;
-        public static final int miSeatMate=0x7f060024;
-        public static final int miSelectBeacon=0x7f060025;
+        public static final int miRefresh=0x7f060025;
+        public static final int miSelectBeacon=0x7f060024;
         public static final int miStatus=0x7f060023;
-        public static final int miSwitch=0x7f060027;
+        public static final int miSwitch=0x7f060026;
         public static final int sbFetchBeacons=0x7f060015;
         public static final int spBeacons=0x7f060014;
         public static final int textView1=0x7f060001;

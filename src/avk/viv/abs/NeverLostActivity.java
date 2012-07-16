@@ -380,12 +380,13 @@ public class NeverLostActivity extends Activity {
                 	this.startActivityFromChild(this, myIntent1, 0);
                // } else 
                 //	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
-	            return true;
+             return true;
+             /*
 	        case R.id.miSeatMate:
-	        	NetLog.Toast(this, "Не доступно");
-	        	//Intent myIntent3 = new Intent(this, SeatmateActivity.class);
-                //startActivityForResult(myIntent3, 0);
+	        	Intent myIntent3 = new Intent(this, SeatmateActivity.class);
+                startActivityForResult(myIntent3, 0);
 	        	return true;
+	        	*/
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
