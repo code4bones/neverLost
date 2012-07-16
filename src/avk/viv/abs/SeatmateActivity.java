@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,14 +24,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
-import com.google.android.maps.OverlayItem;
+import com.google.android.maps.Projection;
 
 
 public class SeatmateActivity extends MapActivity {
@@ -40,6 +40,49 @@ public class SeatmateActivity extends MapActivity {
 	public Button btnDone = null;
 	public BeaconObj currentBeacon = null;
 	
+	public class CircleOverlay extends Overlay {
+
+	    Context context;
+	    double mLat;
+	    double mLon;
+	    float mRadius;
+
+	     public CircleOverlay(Context _context, double _lat, double _lon, float radius ) {
+	            context = _context;
+	            mLat = _lat;
+	            mLon = _lon;
+	            mRadius = radius;
+	     }
+
+	     public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+	         super.draw(canvas, mapView, shadow); 
+
+	         if(shadow) return; // Ignore the shadow layer
+
+	         Projection projection = mapView.getProjection();
+
+	         Point pt = new Point();
+
+	         GeoPoint geo = new GeoPoint((int) (mLat *1e6), (int)(mLon * 1e6));
+
+	         projection.toPixels(geo ,pt);
+	         float circleRadius = projection.metersToEquatorPixels(mRadius);
+
+	         Paint innerCirclePaint;
+
+	         innerCirclePaint = new Paint();
+	         innerCirclePaint.setColor(Color.BLUE);
+	         innerCirclePaint.setAlpha(25);
+	         innerCirclePaint.setAntiAlias(true);
+
+	         innerCirclePaint.setStyle(Paint.Style.FILL);
+
+	         canvas.drawCircle((float)pt.x, (float)pt.y, circleRadius, innerCirclePaint);
+			Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pin);   //pin.png image will require.
+			canvas.drawBitmap(bmp, pt.x-7, pt.y-28, null);
+
+	     }
+	}
 	
 	public class SimpleOverlay extends Overlay {
 		
@@ -52,10 +95,8 @@ public class SeatmateActivity extends MapActivity {
 		@Override
 		public boolean draw(Canvas canvas, MapView mapView,boolean shadow, long when) {
 			super.draw(canvas, mapView, shadow);
-			//---translate the GeoPoint to screen pixels---
 			Point screenPts = new Point();
 			mapView.getProjection().toPixels(this.point, screenPts);
-			//---add the marker---
 			Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pin);   //pin.png image will require.
 			canvas.drawBitmap(bmp, screenPts.x, screenPts.y-50, null);
 			return true;
@@ -108,6 +149,7 @@ public class SeatmateActivity extends MapActivity {
 	    mapView = (MapView)findViewById(R.id.mapview);
 	    mapView.setBuiltInZoomControls(true);
 	   
+	    selectBeacon();
 	}	
 	
 	public void selectBeacon() {
@@ -123,7 +165,7 @@ public class SeatmateActivity extends MapActivity {
 		if ( currentBeacon != null )
 			sTitle = String.format("Где на карте - %s",currentBeacon.name);
 		else 
-			sTitle = "Где друг на карте ?";
+			sTitle = "Где он на карте ?";
 
 		dlg.setTitle(Html.fromHtml(sTitle));
 		this.setTitle(Html.fromHtml(sTitle));
@@ -134,23 +176,32 @@ public class SeatmateActivity extends MapActivity {
 			public void onItemClick(AdapterView<?> item, View arg1, int position,long id) {
 				BeaconObj obj = (BeaconObj)item.getAdapter().getItem(position);
 				currentBeacon = obj;
-				String sTitle = String.format("Где на карте - <b color='red'>%s<b>",currentBeacon.name);
+				String sTitle = String.format("Где на карте - <b>%s<b>",currentBeacon.name);
 				dlg.setTitle(Html.fromHtml(sTitle));
 				SeatmateActivity.this.setTitle(Html.fromHtml(sTitle));
 			}
 	    });
 	    
+	    final String sLogin = prefs.getString("login", "");
+	    final String sPassword = prefs.getString("password", "");
+	    final String sBeaconID = prefs.getString("beaconID", "");
+	    final String sBeaconName = prefs.getString("beaconName","");
+	    		
 	    
 	    // Список дружбанов нашего бикончика
-		FetchBeaconsTask task = new FetchBeaconsTask(gw,prefs.getString("login", ""),
-													    prefs.getString("password", ""),
-													    prefs.getString("beaconID", ""),true) {
+		FetchBeaconsTask task = new FetchBeaconsTask(gw,sLogin,sPassword,sBeaconID,false) {
 			@Override
 			public void OnComplete(ArrayList<BeaconObj> beaconList) {
 				if ( beaconList == null ) {
 					NetLog.MsgBox(SeatmateActivity.this,"Ошибка","Ошибка получения списка:%s",gw.responseMSG);
-			        return;
+			        dlg.dismiss();
+					return;
 				} // beacon not set
+				if ( beaconList.size() == 0 ) {
+					NetLog.MsgBox(SeatmateActivity.this,"Внимание","У %s нет друзей...",sBeaconName);
+					dlg.dismiss();
+					return;
+				}
 				BeaconObj[] beacons = beaconList.toArray(new BeaconObj[beaconList.size()]);
 				BeaconArrayAdapter ad = new BeaconArrayAdapter(SeatmateActivity.this, android.R.layout.simple_list_item_single_choice, beacons,Color.WHITE);
 				listView.setAdapter(ad);
@@ -162,13 +213,13 @@ public class SeatmateActivity extends MapActivity {
 	    // показать его на карте
 	    btnDone.setOnClickListener( new View.OnClickListener() {
 			public void onClick(View v) {
+				dlg.dismiss();
 				if ( currentBeacon == null ) 
 					NetLog.Toast(SeatmateActivity.this,"Пользователь не выбран...");
 				else {
 					NetLog.Toast(SeatmateActivity.this,"Где на карте %s",currentBeacon.name);
+					getSeatmateLocation();
 				}
-				dlg.dismiss();
-				getSeatmateLocation();
 			}
 		});
 		
@@ -179,29 +230,36 @@ public class SeatmateActivity extends MapActivity {
 		PositioningTask task = new PositioningTask(this,currentBeacon) {
 			public void onComplete(BeaconObj beaconObj) {
 				if ( beaconObj != null ) {
-					NetLog.MsgBox(SeatmateActivity.this, "111","%s",beaconObj.toString() );
 					showLocation(beaconObj);
 				}
 				else
-					NetLog.MsgBox(SeatmateActivity.this, "Внимание","У активного телефона нет друзей...");
+					NetLog.MsgBox(SeatmateActivity.this, "Внимание","Нет записей о перемещении %s",currentBeacon.name);
 			}
 		};
 		task.execute((Void[])null);
 	}
 	
 	public void showLocation(BeaconObj beaconObj) {
+
+		String sTitle = String.format("%s//%s (%s)",currentBeacon.name,beaconObj.date,beaconObj.status);
+		this.setTitle(Html.fromHtml(sTitle));
+		
 		MapController mapCtrl = mapView.getController();
 		int lat = (int)(beaconObj.latitude * 1E6);
 		int lng = (int)(beaconObj.longitude *1E6);
 		GeoPoint pt = new GeoPoint(lat, lng);
 		mapCtrl.animateTo(pt);
 		mapCtrl.setCenter(pt);
-		mapCtrl.setZoom(20);
-			
+		mapCtrl.setZoom(18);
+		
+		
 		List<Overlay> list = mapView.getOverlays();
 		list.clear();
-		list.add(new SimpleOverlay(pt));
+		list.add(new CircleOverlay(this,beaconObj.latitude,beaconObj.longitude,beaconObj.accuracy.floatValue()));
+		
 		mapView.invalidate();
+
+	
 	}
 	
 	@Override
@@ -225,6 +283,7 @@ public class SeatmateActivity extends MapActivity {
 	            selectBeacon();
 	        	return true;
 	        case R.id.miRefresh:
+	        	getSeatmateLocation();
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);

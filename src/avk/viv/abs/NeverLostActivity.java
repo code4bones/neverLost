@@ -193,6 +193,7 @@ public class NeverLostActivity extends Activity {
 				    	NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
 				     else 
 				    	NetLog.Toast(NeverLostActivity.this,"Телефон Активирован: %s",currentBeacon.name);
+				    	NeverLostActivity.this.saveBeacon();
 				    } // onSuccess
 				   }; // onConnectedActoin
 		        task.execute((Void[])null);
@@ -319,12 +320,9 @@ public class NeverLostActivity extends Activity {
 		    Calendar cal = Calendar.getInstance();
 		    cal.add(Calendar.SECOND, 1);
 		    
-		    service.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-						cal.getTimeInMillis(), currentBeacon.interval * 60 * 1000, pending);
-		    // Авторизация активного телефона
-	      		NetLog.Toast(NeverLostActivity.this, "Сервис запущен...интервал %d мин",currentBeacon.interval);
-	      		NetLog.v("Activation: %d",gatewayUtil.responseRC);
-	      	
+		    int nInterval = currentBeacon.interval * 60 * 1000;
+		    service.setInexactRepeating(AlarmManager.RTC_WAKEUP,cal.getTimeInMillis(),nInterval , pending);
+	      	NetLog.Toast(NeverLostActivity.this, "Сервис запущен...интервал %d мин",currentBeacon.interval);
 			edit.putBoolean("active",true);
 		} else {
 			doUnbindService();

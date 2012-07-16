@@ -56,9 +56,12 @@ public class LocationTracker   {
 				NetLog.v("%s: Failed to save location: %s",location.getProvider(),gw.responseMSG);
 			else
 				NetLog.v("%s: Location saved...\n",location.getProvider());
+
 			
-			gpsManager.removeUpdates(gpsListener);
-			wifiManager.removeUpdates(wifiListener);
+			if ( gpsListener != null )
+				gpsManager.removeUpdates(gpsListener);
+			if ( wifiListener != null )
+				wifiManager.removeUpdates(wifiListener);
 		}
 
 		public void onProviderDisabled(String provider) {
@@ -83,8 +86,6 @@ public class LocationTracker   {
 
 	public void Init() {
 
-		NetLog.v("LocationTracker initialized");
-		
 		gatewayUtil = new GatewayUtil(context);
 		
 		gpsManager = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
@@ -104,16 +105,19 @@ public class LocationTracker   {
 	public void requestUpdate() {
 		NetLog.v("LocationTacker: Requesting updates...\n");
 		// запрашиваем апдейты по сети и спутнику
-		gpsManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsListener);
-		wifiManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, wifiListener);
+		if ( gpsManager != null )
+			gpsManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsListener);
+		if (wifiManager != null )
+			wifiManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, wifiListener);
+		
 		String beaconID = prefs.getString("beaconID", "0");
 		
 		// Сразу хватаем данные с вышек
-		NetLog.v("Want's to update GSM location for %s",beaconID);
 	    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,prefs.getString("statusText","Нет статуса..."));
 	    if ( !gatewayUtil.saveLocation(locObj) )
 	    	NetLog.v("Failed to save GSM location: %s",gatewayUtil.responseMSG);
-	    else  { NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
+	    else  { 
+	    	NetLog.v("GSM Location: %s", gatewayUtil.responseMSG);
 	    	if ( GsmStatusActivity.updateHandler != null ) {
 	    		Message msg = GsmStatusActivity.updateHandler.obtainMessage(GatewayUtil.kGSM, locObj);
 	    		GsmStatusActivity.updateHandler.sendMessage(msg);

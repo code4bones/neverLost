@@ -63,12 +63,10 @@ public class TrackerService extends Service implements Runnable {
 	{
 		updateLocation.Stop(this.getApplicationContext());
 		updateLocation = null;
-		NetLog.v("Service: OnDestroy");
 	}
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		NetLog.v("Service: onBind");
 		return trackerBinder;
 	}
 	

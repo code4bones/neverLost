@@ -40,9 +40,15 @@ public class BeaconObj extends Object {
 
 
 	public static BeaconObj createWithLocationString(String src) {
-		BeaconObj obj = new BeaconObj();
+		
+		if ( src == null )
+			return null;
 		
 		StringTokenizer tokens = new StringTokenizer(src,"^");
+		if ( tokens.countTokens() < 4 )
+			return null;
+		
+		BeaconObj obj = new BeaconObj();
 		int nToken = 0;
 		while ( tokens.hasMoreTokens() ) {
 			String tok = tokens.nextToken();
