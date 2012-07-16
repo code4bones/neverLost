@@ -20,7 +20,7 @@
 
     <RelativeLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
         android:layout_weight="0.23" >
 
         <TextView
@@ -30,7 +30,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:text="ID Соты ( CID )"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="170dp"/>
 
         <TextView
             android:id="@+id/lbCidValue"
@@ -69,7 +69,7 @@
             android:layout_below="@+id/textView2"
             android:layout_marginTop="20dp"
             android:text="MCC/MNC"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="170dp"/>
 
         <TextView
             android:id="@+id/lbMccValue"
@@ -90,7 +90,7 @@
             android:layout_below="@+id/textView3"
             android:layout_marginTop="22dp"
             android:text="Name"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="170dp"/>
 
         <TextView
             android:id="@+id/lbNameValue"
@@ -110,7 +110,7 @@
             android:layout_below="@+id/textView4"
             android:layout_marginTop="18dp"
             android:text="Время"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" android:width="170dp"/>
 
         <TextView
             android:id="@+id/lbTimeValue"

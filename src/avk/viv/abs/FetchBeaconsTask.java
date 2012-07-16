@@ -34,7 +34,6 @@ public class FetchBeaconsTask extends AsyncTask<Void,Void,ArrayList<BeaconObj>> 
 	  }
 	
 	public void OnComplete(ArrayList<BeaconObj> beacons) {
-		Log.v("clinch","I've not have to be called");
 	}
 	
 	@Override

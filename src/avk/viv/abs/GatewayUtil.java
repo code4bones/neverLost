@@ -326,7 +326,7 @@ public class GatewayUtil {
 		
 		responseMSG = new String(xmlParser.getValue(doc.getDocumentElement(), "msg"));
 		String rc  = new String(xmlParser.getValue(doc.getDocumentElement(),"rc"));
-		responseRC = new Integer(Integer.valueOf(rc)); 
+		responseRC = Integer.valueOf(rc); 
 	}
 	
 	public boolean sendRequest(String sURL) {

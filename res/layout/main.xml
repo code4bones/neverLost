@@ -119,7 +119,6 @@
         android:layout_weight="18.21"
         android:orientation="vertical"
         android:gravity="right|center_vertical" android:paddingTop="30dp">
-        android:paddingTop="10dp" >
 
         
 
