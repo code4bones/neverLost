@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="avk.viv.abs"
+    package="avk.viv.ibs"
     android:versionCode="1"
     android:versionName="Version 2.4.1" >
 

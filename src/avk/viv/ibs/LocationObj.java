@@ -1,4 +1,4 @@
-package avk.viv.abs;
+package avk.viv.ibs;
 
 import android.location.Criteria;
 import android.location.LocationManager;

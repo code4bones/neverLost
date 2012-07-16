@@ -1,4 +1,4 @@
-package avk.viv.abs;
+package avk.viv.ibs;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

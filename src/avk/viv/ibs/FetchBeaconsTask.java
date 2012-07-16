@@ -1,10 +1,9 @@
-package avk.viv.abs;
+package avk.viv.ibs;
 
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.util.Log;
 
 
 public class FetchBeaconsTask extends AsyncTask<Void,Void,ArrayList<BeaconObj>> {

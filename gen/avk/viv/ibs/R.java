@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package avk.viv.abs;
+package avk.viv.ibs;
 
 public final class R {
     public static final class attr {

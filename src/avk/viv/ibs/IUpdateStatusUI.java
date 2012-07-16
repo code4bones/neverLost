@@ -1,4 +1,4 @@
-package avk.viv.abs;
+package avk.viv.ibs;
 
 public interface IUpdateStatusUI<Loc> {
 	

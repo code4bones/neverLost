@@ -1,4 +1,4 @@
-package avk.viv.abs;
+package avk.viv.ibs;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
