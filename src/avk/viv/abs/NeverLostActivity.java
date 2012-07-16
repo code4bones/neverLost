@@ -79,14 +79,17 @@ public class NeverLostActivity extends Activity {
         
         currentBeacon = new BeaconObj();
         isActive = false;
-        
+       
+		currentBeacon.login    = "v.g.0873@bk.ru";
+		currentBeacon.password = "9d8x4";
+       
 		// Поднимаем старые настройки
 		if ( prefs.getString("login", null) != null )
 		{
 			isRestoreState = true;
 			NetLog.v("GUI: Saved settings are available...\n");
-			currentBeacon.login    = prefs.getString("login", "");
-			currentBeacon.password = prefs.getString("password", "");
+			//currentBeacon.login    = prefs.getString("login", "");
+			//currentBeacon.password = prefs.getString("password", "");
 			currentBeacon.uid      = prefs.getString("beaconID", "");
 			currentBeacon.name     = prefs.getString("beaconName", "");
 			currentBeacon.interval = prefs.getInt("interval", 10);
@@ -122,7 +125,7 @@ public class NeverLostActivity extends Activity {
 			public void onClick(View v) {
 				
 				String sLogin = txtLogin.getText().toString();
-				String sPassword = txtLogin.getText().toString();
+				String sPassword = txtPassword.getText().toString();
 				
 				if ( !validateLogin(sLogin,sPassword) )
 					return;
@@ -379,9 +382,10 @@ public class NeverLostActivity extends Activity {
                 //	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
 	            return true;
 	        case R.id.miSeatMate:
-	        	Intent myIntent3 = new Intent(this, SeatmateActivity.class);
-                startActivityForResult(myIntent3, 0);
-	            return true;
+	        	NetLog.Toast(this, "Не доступно");
+	        	//Intent myIntent3 = new Intent(this, SeatmateActivity.class);
+                //startActivityForResult(myIntent3, 0);
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }

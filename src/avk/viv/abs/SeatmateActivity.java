@@ -1,8 +1,9 @@
 package avk.viv.abs;
+import android.app.Activity;
 
+/*
 import java.util.ArrayList;
 import java.util.List;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,7 +13,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+*/
 import android.os.Bundle;
+/*
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,10 +31,18 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
+*/
 
+public class SeatmateActivity extends /*Map*/ Activity {
 
-public class SeatmateActivity extends MapActivity {
-
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+	    super.onCreate(savedInstanceState);
+	    setContentView(R.layout.seatmate);
+	
+	}
+	/*
 	public MapView mapView = null;
 	public ListView listView = null;
 	public Button btnDone = null;
@@ -233,6 +244,6 @@ public class SeatmateActivity extends MapActivity {
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
-	
+	*/
 	
 }
