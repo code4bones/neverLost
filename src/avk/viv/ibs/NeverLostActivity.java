@@ -32,15 +32,21 @@ public class NeverLostActivity extends Activity {
     /** Called when the activity is first created. */
 	public static GatewayUtil gatewayUtil = null;
     
+	final public static int kSelect = 0;
+	final public static int kActivate = 1;
+	final public static int kDeactivate = 2;
+	
+	public int currentState = kSelect;
+	
 	// GUI
-	public Button	bnFetchBeacons;
+	public Button	bnAction;
 	public TextView lbVersion;
 	public EditText txtLogin;
 	public EditText txtPassword;
-	public Spinner  spBeacons;
-	public TextView lbInterval;
+	//public Spinner  spBeacons;
+	//public TextView lbInterval;
 	public EditText txtStatusText;
-	public ToggleButton tgActive;
+	//public ToggleButton tgActive;
 	static public BeaconObj currentBeacon;
     
 	public Intent statusIntent = null;
@@ -49,8 +55,16 @@ public class NeverLostActivity extends Activity {
 	public boolean isServiceBound;
 	public boolean isRestoreState;
 	public boolean isActive;
-	
+	public int nNextAction = kSelect;
+			
 	public static final PrintStream log = NetLog.Init("clinch","neverLost.log",true);
+	
+	String getActionTitle() {
+		String[] caption = {"Выбрать телефон","Активировать","Деактивировать"};
+		currentState %= 3; // currentState % 3;
+		return caption[currentState];
+	}
+	
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,16 +80,18 @@ public class NeverLostActivity extends Activity {
         this.lbVersion = (TextView)findViewById(R.id.lbVersion);
         this.txtLogin = (EditText)findViewById(R.id.txtLogin);
         this.txtPassword = (EditText)findViewById(R.id.txtPassword);
-        this.lbInterval = (TextView)findViewById(R.id.lbInterval);
-        this.tgActive = (ToggleButton)findViewById(R.id.tgActive);
-        this.spBeacons = (Spinner)findViewById(R.id.spBeacons);
-        this.bnFetchBeacons = (Button)findViewById(R.id.sbFetchBeacons);
+        //this.lbInterval = (TextView)findViewById(R.id.lbInterval);
+        //this.tgActive = (ToggleButton)findViewById(R.id.tgActive);
+        //this.spBeacons = (Spinner)findViewById(R.id.spBeacons);
+        this.bnAction = (Button)findViewById(R.id.sbFetchBeacons);
         this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
+
+        this.bnAction.setText(getActionTitle());
         
         // пока не залогинены - нахер
-        this.tgActive.setEnabled(false);
-        this.spBeacons.setEnabled(false);
-        this.lbInterval.setTextColor(Color.DKGRAY);
+        //this.tgActive.setEnabled(false);
+        //this.spBeacons.setEnabled(false);
+        //this.lbInterval.setTextColor(Color.DKGRAY);
         
         currentBeacon = new BeaconObj();
         isActive = false;
@@ -121,12 +137,17 @@ public class NeverLostActivity extends Activity {
 		}
 		
 		// Получение списка телепонов и инициализация спиннера
-		View.OnClickListener onLoadBeacons = new View.OnClickListener() {
+		View.OnClickListener onPerformAction = new View.OnClickListener() {
 			public void onClick(View v) {
 				
 				String sLogin = txtLogin.getText().toString();
 				String sPassword = txtPassword.getText().toString();
 				
+				currentState++;
+				String sTitle = NeverLostActivity.this.getActionTitle();
+				NeverLostActivity.this.bnAction.setText(sTitle);
+
+				/*
 				if ( !validateLogin(sLogin,sPassword) )
 					return;
 				
@@ -137,25 +158,25 @@ public class NeverLostActivity extends Activity {
 						if ( beaconList == null ) {
 							NetLog.MsgBox(NeverLostActivity.this,"Ошибка","Ошибка получения списка:%s",gatewayUtil.responseMSG);
 							Toast.makeText(NeverLostActivity.this, gatewayUtil.responseMSG,Toast.LENGTH_SHORT).show();
-					        tgActive.setEnabled(false);
-					        spBeacons.setEnabled(false);
-					        lbInterval.setTextColor(Color.DKGRAY);
+					        //tgActive.setEnabled(false);
+					        //spBeacons.setEnabled(false);
+					        //lbInterval.setTextColor(Color.DKGRAY);
 					        return;
 						}
 						BeaconObj[] beacons = beaconList.toArray(new BeaconObj[beaconList.size()]);
 						BeaconArrayAdapter ad = new BeaconArrayAdapter(NeverLostActivity.this, android.R.layout.simple_spinner_item, beacons,Color.BLACK);
 						ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-						spBeacons.setAdapter(ad);	
-						spBeacons.setPrompt("Выберете...");
-						tgActive.setEnabled(true);
-				        spBeacons.setEnabled(!isActive);
+						//spBeacons.setAdapter(ad);	
+						//spBeacons.setPrompt("Выберете...");
+						//tgActive.setEnabled(true);
+				        //spBeacons.setEnabled(!isActive);
 						// Если востанавлеваем значения из sharedprefs...
-						if ( isRestoreState )
-							spBeacons.setSelection(currentBeacon.selectedBeaconIndex);
+						//if ( isRestoreState )
+							//spBeacons.setSelection(currentBeacon.selectedBeaconIndex);
 					}
 				};
 				task.execute((Void[])null);
-			}
+			}*/
 		}; // OnClickListener
 
 		// Выбираем активный телефон из спиннера
@@ -174,8 +195,8 @@ public class NeverLostActivity extends Activity {
 					currentBeacon.interval = 10;
 				}
 				
-				lbInterval.setText(String.format("Период обновления: %d мин.",currentBeacon.interval));
-		        lbInterval.setTextColor(Color.WHITE);
+				//lbInterval.setText(String.format("Период обновления: %d мин.",currentBeacon.interval));
+		        //lbInterval.setTextColor(Color.WHITE);
 		        
 		        // авторизируемся асинхронно
 		        onConnectedAction task = new onConnectedAction(NeverLostActivity.this,"Подождите...","Идет авторизация телефона %s",currentBeacon.name) {
@@ -222,6 +243,7 @@ public class NeverLostActivity extends Activity {
 		
 		
 		// Остановка/Запуск сервиса
+		/*
 		CompoundButton.OnCheckedChangeListener onChangeActive = new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton arg0, boolean fActive) {
 				txtLogin.setEnabled(!fActive);
@@ -229,11 +251,12 @@ public class NeverLostActivity extends Activity {
 				txtPassword.setEnabled(!fActive);
 				txtPassword.setClickable(!fActive);
 				txtStatusText.setEnabled(!fActive);
-				bnFetchBeacons.setEnabled(!fActive);
-				spBeacons.setEnabled(!fActive);
+				//bnFetchBeacons.setEnabled(!fActive);
+				//spBeacons.setEnabled(!fActive);
 				controlService(fActive);
-			}
+			} */
 		};
+		
 		
 		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -246,24 +269,24 @@ public class NeverLostActivity extends Activity {
 		
 
 		// Вешаем эвенты
-		this.tgActive.setOnCheckedChangeListener(onChangeActive);
-		this.bnFetchBeacons.setOnClickListener( onLoadBeacons );		
-		this.spBeacons.setOnItemSelectedListener( onSelectBeacon );
-		this.txtLogin.setOnKeyListener(onValidateInput);
-		this.txtPassword.setOnKeyListener(onValidateInput);
+		//this.tgActive.setOnCheckedChangeListener(onChangeActive);
+		this.bnAction.setOnClickListener( onPerformAction );		
+		//this.spBeacons.setOnItemSelectedListener( onSelectBeacon );
+		//this.txtLogin.setOnKeyListener(onValidateInput);
+		//this.txtPassword.setOnKeyListener(onValidateInput);
 
 		// Состояние контролсов
 		if ( (this.isActive = isServiceRunning()) == true ) {
 			NetLog.v("Service is already Running...");
-			tgActive.setChecked(true);
-			tgActive.setEnabled(true);
+			//tgActive.setChecked(true);
+			//tgActive.setEnabled(true);
 		}
 		
 		// если есть предыдущее состояние - восстанавливаем значение в спиннере
 		if ( isRestoreState ) { 
 			onConnectedAction task = new onConnectedAction(this,"Подождите","Идет проверка сети...") {
 				public void onSuccess() {
-						bnFetchBeacons.performClick();
+						//bnFetchBeacons.performClick();
 				} // onSuccess
 			};// onConnectedAction
 			task.execute((Void[])null);

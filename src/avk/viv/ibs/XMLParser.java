@@ -34,7 +34,8 @@ public class XMLParser {
 	 * Getting XML from URL making HTTP request
 	 * @param url string
 	 * @throws Exception 
-	 * */
+	 */
+	
 	public String getXmlFromUrl(String url) throws Exception {
 		String xml = null;
 		try {

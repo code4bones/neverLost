@@ -23,7 +23,7 @@ public class NetLog {
 	public static PrintStream Init(String tag,String sLogFileName,boolean removeIfExists) {
 		try {
 			TAG = tag;
-			sLogFile = Environment.getExternalStorageDirectory() + "/" + sLogFile;
+			sLogFile = Environment.getExternalStorageDirectory() + "/" + sLogFileName;
 			File file = new File(sLogFile);
 			if ( file.exists() && removeIfExists ) {
 				Log.v(TAG,"file removed");
