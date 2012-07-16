@@ -1,31 +1,22 @@
 package avk.viv.abs;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnKeyListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 
@@ -36,7 +27,6 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	 public TextView lbLongitudeValue;
 	 public TextView lbAccuracyValue;
 	 public TextView lbTimeValue;
-	 public TextView lbUpdatesValue;
 	 public TextView lbStatus;
 	 public Button   btnShowGSM;
 	 public Button   btnGoogle;
@@ -55,7 +45,6 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 			lbLongitudeValue.setText(String.valueOf(locObj.location.getLongitude()));
 			lbAccuracyValue.setText(String.valueOf(locObj.location.getAccuracy()));
 			lbTimeValue.setText(String.valueOf(df.format(new Date(locObj.location.getTime()))));
-			lbUpdatesValue.setText(String.valueOf(locObj.updateCount));
 			lbStatus.setText(sStatus);
 	 }
 	 
@@ -73,7 +62,6 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	        lbLongitudeValue = (TextView)findViewById(R.id.lbLongitudeValue);
 	        lbAccuracyValue = (TextView)findViewById(R.id.lbAccuracyValue);
 	        lbTimeValue = (TextView)findViewById(R.id.lbTimeValue);
-	        lbUpdatesValue = (TextView)findViewById(R.id.lbUpdatesValue);
 	        btnShowGSM = (Button)findViewById(R.id.btnShowGSM);
 	        btnGoogle  = (Button)findViewById(R.id.btnGoogle);
 	        
@@ -94,33 +82,70 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 	                startActivityForResult(i, 0);
 				}
 			});
-	        
-	        if ( lastLocation != null ) {
-	        	updateUI((GPSOrNetworkLocationObj)lastLocation);
-	        	NetLog.Toast(this,"Координаты последнего обновления...");
-	        } else {
-	   		 	LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-	        	String bestProvider = LocationObj.getBestProvider(lm);
-	   		 	Location location = lm.getLastKnownLocation(bestProvider);
-	        	// best is bastard !
-	   		 	if ( location == null ) {
-	        		String oldProvider = bestProvider;
-	   		 		if ( bestProvider.equals(LocationManager.GPS_PROVIDER )) bestProvider = LocationManager.NETWORK_PROVIDER;
-	        		else bestProvider = LocationManager.NETWORK_PROVIDER;
-	        		location = lm.getLastKnownLocation(bestProvider);
-	   		 		NetLog.Toast(this,"%s не доступен, использую %s", oldProvider,bestProvider);
-	        	}
-	   		 	
-	        	if ( location != null  ) {
-	        		NetLog.Toast(this, "Координаты/%s", bestProvider);
-	        		SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
-	        		updateUI(new GPSOrNetworkLocationObj(prefs.getString("beaconID", ""),location,prefs.getString("statusText", "")));
-	        	} else {
-	        		NetLog.Toast(this, "Ошибка получения координат через %s",bestProvider);
-	        	}
-	        } // lastLocation == null
-	 }
 
+	        SharedPreferences prefs = this.getSharedPreferences("prefs", 1);
+    		final String sStatus  = prefs.getString("statusText", "");
+        	final String beaconID = prefs.getString("beaconID", "0");
+        	
+        	// сначала попробуем получить из базы последнюю позицию
+        	// если не получица, то дернем ласт-ноун
+        	BackgroundTask<BeaconObj,String> task = new BackgroundTask<BeaconObj,String>(this) {
+        		@Override
+        		protected BeaconObj doInBackground(String ... args) {
+        			GatewayUtil gw = new GatewayUtil(context);
+        			return gw.getLastBeaconLocation(args[0]);
+        		}
+        		
+        		public void onComplete(BeaconObj obj) {
+        			// Если получится стащить из базы
+        			if ( obj != null ) {
+        				Location loc = new Location("gps");
+        				loc.setLatitude(obj.latitude);
+        				loc.setLongitude(obj.longitude);
+        				loc.setAccuracy(obj.accuracy.floatValue());
+        				SimpleDateFormat df = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        				try {
+        					Date dt = df.parse(obj.date);
+	        				long tm = dt.getTime();
+	        				loc.setTime(tm);
+	        				NetLog.Toast(StatusActivity.this,"Последняя локация из базы..." );
+	    	        		updateUI(new GPSOrNetworkLocationObj(beaconID,loc,sStatus));
+        				} catch ( ParseException e )
+        				{
+        					NetLog.MsgBox(StatusActivity.this,"Ошибка", "Не могу преобразовать:%s",e.toString());
+        				} // try
+        			} // beacon found
+        			else {
+        				// в базе нихера нет, тогда берем последнюю...
+        				NetLog.Toast(StatusActivity.this,"Последняя актуальная локация..." );
+        				StatusActivity.this.getLastKnownLocation(beaconID,sStatus);
+        			} // beacon not found
+        		} // onComplete
+        	}; // BackgroundTask
+        	task.execute(beaconID);
+	 	}
+	 
+	 	public void getLastKnownLocation(String beaconID,String sStatus) {
+	 		LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
+        	String bestProvider = LocationObj.getBestProvider(lm);
+   		 	Location location = lm.getLastKnownLocation(bestProvider);
+        	// best is bastard !
+   		 	if ( location == null ) {
+        		String oldProvider = bestProvider;
+   		 		if ( bestProvider.equals(LocationManager.GPS_PROVIDER )) bestProvider = LocationManager.NETWORK_PROVIDER;
+        		else bestProvider = LocationManager.NETWORK_PROVIDER;
+        		location = lm.getLastKnownLocation(bestProvider);
+   		 		NetLog.Toast(this,"%s не доступен, использую %s", oldProvider,bestProvider);
+        	}
+   		 	
+        	if ( location != null  ) {
+        		NetLog.Toast(this, "Координаты/%s", bestProvider);
+        		updateUI(new GPSOrNetworkLocationObj(beaconID,location,sStatus));
+        	} else {
+        		NetLog.Toast(this, "Ошибка получения координат через %s",bestProvider);
+        	}
+	 	}
+	 
 		@Override
 		public boolean onCreateOptionsMenu(Menu menu) {
 		    MenuInflater inflater = getMenuInflater();

@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import android.app.AlertDialog;
 import android.content.Context;

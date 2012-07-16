@@ -17,7 +17,7 @@ public final class R {
     public static final class id {
         public static final int btnDone=0x7f06001b;
         public static final int btnGoogle=0x7f06000b;
-        public static final int btnShowGSM=0x7f060025;
+        public static final int btnShowGSM=0x7f060023;
         public static final int lbAccuracy=0x7f060020;
         public static final int lbAccuracyValue=0x7f060021;
         public static final int lbBeacon=0x7f060013;
@@ -38,15 +38,13 @@ public final class R {
         public static final int lbTime=0x7f060022;
         public static final int lbTimeValue=0x7f06000a;
         public static final int lbTitle=0x7f06000d;
-        public static final int lbUpdates=0x7f060023;
-        public static final int lbUpdatesValue=0x7f060024;
         public static final int lbVersion=0x7f06000c;
         public static final int mapview=0x7f060019;
-        public static final int miRefresh=0x7f060029;
-        public static final int miSeatMate=0x7f060027;
-        public static final int miSelectBeacon=0x7f060028;
-        public static final int miStatus=0x7f060026;
-        public static final int miSwitch=0x7f06002a;
+        public static final int miRefresh=0x7f060027;
+        public static final int miSeatMate=0x7f060025;
+        public static final int miSelectBeacon=0x7f060026;
+        public static final int miStatus=0x7f060024;
+        public static final int miSwitch=0x7f060028;
         public static final int sbFetchBeacons=0x7f060015;
         public static final int spBeacons=0x7f060014;
         public static final int textView1=0x7f060001;

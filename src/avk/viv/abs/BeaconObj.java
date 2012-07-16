@@ -1,9 +1,6 @@
 package avk.viv.abs;
 
-import java.lang.*;
 import java.util.StringTokenizer;
-
-import android.util.Log;
 
 public class BeaconObj extends Object {
 	

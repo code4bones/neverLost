@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 
 public class FetchBeaconsTask extends AsyncTask<Void,Void,ArrayList<BeaconObj>> {

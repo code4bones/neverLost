@@ -1,6 +1,5 @@
 package avk.viv.abs;
 
-import android.content.Context;
 import android.location.Criteria;
 import android.location.LocationManager;
 

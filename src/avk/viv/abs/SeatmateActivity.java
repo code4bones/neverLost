@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +12,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Menu;
@@ -84,62 +81,6 @@ public class SeatmateActivity extends MapActivity {
 	     }
 	}
 	
-	public class SimpleOverlay extends Overlay {
-		
-		GeoPoint point;
-		
-		SimpleOverlay(GeoPoint point) {
-			this.point = point;
-		}
-		
-		@Override
-		public boolean draw(Canvas canvas, MapView mapView,boolean shadow, long when) {
-			super.draw(canvas, mapView, shadow);
-			Point screenPts = new Point();
-			mapView.getProjection().toPixels(this.point, screenPts);
-			Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pin);   //pin.png image will require.
-			canvas.drawBitmap(bmp, screenPts.x, screenPts.y-50, null);
-			return true;
-		}		
-	};
-	
-	// По сути можно и отказаться от фона, ну да черт с ним...
-	public class PositioningTask extends AsyncTask<Void,Void,BeaconObj> {
-		
-		public ProgressDialog progress = null;
-		public Context context = null;
-		public BeaconObj sourceBeacon = null;
-	
-		public PositioningTask(Context context,BeaconObj sourceBeacon) {
-			this.context = context;
-			this.sourceBeacon = sourceBeacon;
-		}
-		
-		public void onComplete(BeaconObj beaconObj) {
-			
-		}
-		
-		@Override
-		protected void onPreExecute() {
-		    progress = new ProgressDialog(context);
-		    progress.setTitle("Подождите...");
-		    progress.setMessage("Получение данных...");
-		    progress.setIndeterminate(true);
-		    progress.setCancelable(true);
-		    progress.show();
-		  }
-		
-		@Override
-		protected BeaconObj doInBackground(Void ... arg0) {
-			GatewayUtil gw = new GatewayUtil(context);
-			return gw.getLastBeaconLocation(sourceBeacon.uid);
-		}
-		
-		protected void onPostExecute(BeaconObj beaconObj) {
-			progress.dismiss();
-			onComplete(beaconObj);
-	  }	
-	}; // PositioningTask
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -226,8 +167,7 @@ public class SeatmateActivity extends MapActivity {
 	}
 	
 	public void getSeatmateLocation() {
-		
-		PositioningTask task = new PositioningTask(this,currentBeacon) {
+		BackgroundTask<BeaconObj,String> task = new BackgroundTask<BeaconObj,String>(this) {
 			public void onComplete(BeaconObj beaconObj) {
 				if ( beaconObj != null ) {
 					showLocation(beaconObj);
@@ -235,8 +175,13 @@ public class SeatmateActivity extends MapActivity {
 				else
 					NetLog.MsgBox(SeatmateActivity.this, "Внимание","Нет записей о перемещении %s",currentBeacon.name);
 			}
+			@Override
+			protected BeaconObj doInBackground(String ... args) {
+				GatewayUtil gw = new GatewayUtil(context);
+				return gw.getLastBeaconLocation(args[0]);
+			}
 		};
-		task.execute((Void[])null);
+		task.execute(currentBeacon.uid);
 	}
 	
 	public void showLocation(BeaconObj beaconObj) {
@@ -264,7 +209,6 @@ public class SeatmateActivity extends MapActivity {
 	
 	@Override
 	protected boolean isRouteDisplayed() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

@@ -13,7 +13,7 @@
         android:gravity="center_horizontal"
         android:text="Статус"
         android:textAppearance="?android:attr/textAppearanceLarge" android:paddingTop="20px"/>
-
+
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -25,10 +25,12 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:paddingRight="20px"
             android:paddingTop="10px"
             android:text="Широта"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:paddingRight="20px" android:width="250px"/>
-
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:width="250px" />
+
         <TextView
             android:id="@+id/lbLatitudeValue"
             android:layout_width="fill_parent"
@@ -36,8 +38,9 @@
             android:layout_alignBaseline="@+id/lbLatitude"
             android:layout_alignBottom="@+id/lbLatitude"
             android:layout_toRightOf="@+id/lbLatitude"
+            android:gravity="center_horizontal"
             android:text="0"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/lbLongitude"
@@ -47,8 +50,9 @@
             android:layout_below="@+id/lbLatitude"
             android:layout_marginTop="15dp"
             android:text="Долгота"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
-
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:width="250px" />
+
         <TextView
             android:id="@+id/lbLongitudeValue"
             android:layout_width="fill_parent"
@@ -56,8 +60,9 @@
             android:layout_alignBaseline="@+id/lbLongitude"
             android:layout_alignBottom="@+id/lbLongitude"
             android:layout_alignLeft="@+id/lbLatitudeValue"
+            android:gravity="center_horizontal"
             android:text="0"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/lbAccuracy"
@@ -67,8 +72,9 @@
             android:layout_below="@+id/lbLongitude"
             android:layout_marginTop="17dp"
             android:text="Точность"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
-
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:width="250px" />
+
         <TextView
             android:id="@+id/lbAccuracyValue"
             android:layout_width="fill_parent"
@@ -76,8 +82,9 @@
             android:layout_alignBaseline="@+id/lbAccuracy"
             android:layout_alignBottom="@+id/lbAccuracy"
             android:layout_toRightOf="@+id/lbAccuracy"
+            android:gravity="center_horizontal"
             android:text="0"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/lbTime"
@@ -87,8 +94,9 @@
             android:layout_below="@+id/lbAccuracy"
             android:layout_marginTop="18dp"
             android:text="Время"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
-
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:width="250px" />
+
         <TextView
             android:id="@+id/lbTimeValue"
             android:layout_width="fill_parent"
@@ -99,26 +107,6 @@
             android:gravity="center_horizontal"
             android:text="01/01/12 00:00:00"
             android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/lbUpdates"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/lbTime"
-            android:layout_marginTop="16dp"
-            android:text="Обновления"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:width="250px"/>
-
-        <TextView
-            android:id="@+id/lbUpdatesValue"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/lbUpdates"
-            android:layout_alignBottom="@+id/lbUpdates"
-            android:layout_alignLeft="@+id/lbTimeValue"
-            android:text="0"
-            android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_horizontal"/>
 
         <Button
             android:id="@+id/btnShowGSM"
@@ -135,9 +123,9 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/lbUpdates"
+            android:layout_below="@+id/lbTime"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="51dp"
+            android:layout_marginTop="42dp"
             android:text="Google" />
 
     </RelativeLayout>

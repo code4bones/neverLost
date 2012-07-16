@@ -7,37 +7,26 @@ import java.util.Calendar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.telephony.*;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnKeyListener;
-import android.location.*;
-import android.net.*;
 import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.TextView.OnEditorActionListener;
 
 public class NeverLostActivity extends Activity {
     /** Called when the activity is first created. */
@@ -383,11 +372,11 @@ public class NeverLostActivity extends Activity {
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	        case R.id.miStatus:
-                if ( isServiceRunning() ) {
+              //  if ( isServiceRunning() ) {
                 	Intent myIntent1 = new Intent(this, StatusActivity.class);
                 	this.startActivityFromChild(this, myIntent1, 0);
-                } else 
-                	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
+               // } else 
+                //	Toast.makeText(NeverLostActivity.this, "Сначала запустите сервис...",Toast.LENGTH_SHORT).show();
 	            return true;
 	        case R.id.miSeatMate:
 	        	Intent myIntent3 = new Intent(this, SeatmateActivity.class);
