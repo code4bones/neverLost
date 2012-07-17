@@ -38,7 +38,7 @@ public class BeaconArrayAdapter extends ArrayAdapter<BeaconObj> {
 		TextView label = new TextView(this.context);
 		label.setTextColor(textColor);
 		label.setText(beacons[position].name);
-		label.setTextSize(15);
+		label.setTextSize(22);
 		return label;
 	}
 
@@ -47,7 +47,7 @@ public class BeaconArrayAdapter extends ArrayAdapter<BeaconObj> {
 		TextView label = new TextView(context);
         label.setTextColor(textColor);
         label.setText(beacons[position].name);
-		label.setTextSize(20);
+		label.setTextSize(22);
         return label;
 	}
 }

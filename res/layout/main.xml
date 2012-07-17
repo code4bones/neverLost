@@ -5,12 +5,6 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/lbVersion"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="version" />
-
-    <TextView
         android:id="@+id/lbTitle"
         android:layout_width="292dp"
         android:layout_height="wrap_content"
@@ -58,31 +52,39 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPassword" />
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.81"
-        android:gravity="right"
-        android:orientation="horizontal" >
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" >
+
         <Button
-            android:id="@+id/sbFetchBeacons"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="center_vertical|center_horizontal"
+            android:id="@+id/btnFetchBeacons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
             android:text="Выбрать телефон" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="18.21"
-        android:orientation="vertical"
-        android:gravity="right|center_vertical" android:paddingTop="30dp">
+        <Button
+            android:id="@+id/btnActivate"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBaseline="@+id/btnFetchBeacons"
+            android:layout_alignBottom="@+id/btnFetchBeacons"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/btnFetchBeacons"
+            android:text="Активировать" />
+
+        <ToggleButton
+            android:id="@+id/tbActivate"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="false"
+            android:layout_toRightOf="@+id/btnActivate"
+            android:text="ToggleButton" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <EditText
         android:id="@+id/txtStatus"
