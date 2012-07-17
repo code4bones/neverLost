@@ -42,15 +42,15 @@ public class NeverLostActivity extends Activity {
 	
 	// GUI
 	
-	public Button	btnFetchBeacons;
+	//public Button	btnAc;
 	public Button   btnActivate;
+	//public ToggleButton tbActivate;
 	public TextView lbLogin;
 	public EditText txtLogin;
 	public EditText txtPassword;
 	//public Spinner  spBeacons;
 	//public TextView lbInterval;
 	public EditText txtStatusText;
-	public ToggleButton tbActivate;
 	static public BeaconObj currentBeacon;
     
 	public Intent statusIntent = null;
@@ -63,39 +63,38 @@ public class NeverLostActivity extends Activity {
 	
 	public static final PrintStream log = NetLog.Init("clinch","neverLost.log",true);
 	
-	public String getActionTitle() {
-		String[] caption = {"*","Активировать","Деактивировать"};
-		return caption[currentAction];
-	}
-
 	public void setLoginLabel() {
 		this.lbLogin.setText(String.format("Логин / %s%s",
 				currentBeacon.name != null && currentBeacon.name.length() > 0?currentBeacon.name:"",
 				currentBeacon.authorized?" - Активирован":" - Не активирован"));
+		this.btnActivate.setText(!currentBeacon.authorized?"Активировать":"Остановить");
 	}
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        // HTTP Gateway Utility Object
+        gatewayUtil = new GatewayUtil(this);
         
-        
+        currentBeacon = new BeaconObj();
         isServiceBound = false;
+
+        boolean fRunning = isServiceRunning();
+		if ( fRunning ) {
+			NetLog.Toast(this,"Сервис уже запущен !");
+			currentAction = kActionDeactivate;
+		}
         
         // GUI Initialization
         this.lbLogin  = (TextView)findViewById(R.id.lbLogin);
         this.txtLogin = (EditText)findViewById(R.id.txtLogin);
         this.txtPassword = (EditText)findViewById(R.id.txtPassword);
-        this.btnFetchBeacons = (Button)findViewById(R.id.btnFetchBeacons);
-        this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
         this.btnActivate = (Button)findViewById(R.id.btnActivate);
-        this.tbActivate  = (ToggleButton)findViewById(R.id.tbActivate);
-        
-        this.btnActivate.setText(getActionTitle());
+        this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
         
         // пока не залогинены - нахер
-        
-        currentBeacon = new BeaconObj();
         
        
 		// Поднимаем старые настройки
@@ -119,28 +118,16 @@ public class NeverLostActivity extends Activity {
 		currentBeacon.password = "bada"; //"9d8x4";
 
 		// Состояние контролсов
-        boolean fRunning = isServiceRunning();
-		if ( fRunning ) {
-			NetLog.Toast(this,"Сервис уже запущен !");
-			currentAction = kActionDeactivate;
-		}
 		
 		this.txtLogin.setText(currentBeacon.login);
 		this.txtPassword.setText(currentBeacon.password);
         this.txtStatusText.setText(currentBeacon.status);
-        this.btnActivate.setText(getActionTitle());
 
-        this.tbActivate.setEnabled(currentBeacon.authorized);
-        this.tbActivate.setChecked(fRunning);
-        this.btnActivate.setEnabled(!fRunning);
-        this.btnFetchBeacons.setEnabled(!fRunning && !currentBeacon.authorized);
-		this.txtLogin.setEnabled(!fRunning && !currentBeacon.authorized);
+        this.txtLogin.setEnabled(!fRunning && !currentBeacon.authorized);
 		this.txtPassword.setEnabled(!fRunning && !currentBeacon.authorized);
 		this.txtStatusText.setEnabled(!fRunning && !currentBeacon.authorized);
         
         
-        // HTTP Gateway Utility Object
-        gatewayUtil = new GatewayUtil(this);
         
         // Setup Version information label
         PackageInfo pinfo;
@@ -153,33 +140,17 @@ public class NeverLostActivity extends Activity {
 		} // try PackageInfo
 		
 		
-		// Получение списка телепонов
-		View.OnClickListener onSelectBeacon = new View.OnClickListener() {
+		// Запуск сервиса
+		View.OnClickListener onActivateService = new View.OnClickListener() {
 			public void onClick(View v) {
-				selectBeacon(txtLogin.getText().toString(),txtPassword.getText().toString());
+				if ( currentBeacon.authorized == false ) {
+					 selectBeacon(txtLogin.getText().toString(),txtPassword.getText().toString());
+				} else { // authorized - stop
+					NetLog.Toast(NeverLostActivity.this, "Остановка");
+					activateBeacon(false);
+				}
 			} // onClick
 		}; // onSelectBeacon
-		
-		
-		// Активация-Деактивация телефона
-		View.OnClickListener onBeaconAction = new View.OnClickListener() {
-			public void onClick(View v) {
-				if ( activateBeacon(currentAction == kActionActivate) ) {
-					currentAction = currentAction == kActionActivate?kActionDeactivate:kActionActivate;
-					NeverLostActivity.this.btnActivate.setText(getActionTitle());
-				} // activateBeacon(..
-			} // onClick
-		}; // onBeaconAction
-		
-		
-		// Старт-Стоп сервиса
-		tbActivate.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-				//	
-				controlService(isChecked);
-			}
-			
-		}); // Toggle service
 		
 		
 		// Запрещаем пустые поля логина и пароля
@@ -217,8 +188,7 @@ public class NeverLostActivity extends Activity {
 		};
 		
 		// Вешаем эвенты
-		this.btnFetchBeacons.setOnClickListener( onSelectBeacon );
-		this.btnActivate.setOnClickListener( onBeaconAction );
+		this.btnActivate.setOnClickListener( onActivateService );
 		this.txtLogin.setOnKeyListener(onValidateInput);
 		this.txtPassword.setOnKeyListener(onValidateInput);
 
@@ -259,8 +229,9 @@ public class NeverLostActivity extends Activity {
 					NetLog.Toast(NeverLostActivity.this,"Пользователь не выбран...");
 				else {
 					NetLog.Toast(NeverLostActivity.this,"Телефон \"%s\" выбран",currentBeacon.name);
-					NeverLostActivity.this.btnActivate.setEnabled(true);
+					saveBeacon();
 					setLoginLabel();
+					activateBeacon(true);
 				}
 			}
 		});
@@ -299,12 +270,12 @@ public class NeverLostActivity extends Activity {
 				if ( !fAuthorized )
 					NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
 				else
-					NetLog.Toast(this.context,"Телефон %s %s",currentBeacon.name,fActivate?"Авторизирован":"Деавторизирован");
-				tbActivate.setEnabled(fActivate && fAuthorized);
-				btnFetchBeacons.setEnabled(!fActivate);
+					NetLog.Toast(this.context,"Телефон %s %s",currentBeacon.name,fActivate?"Активирован":"Деактивирован");
+				currentAction = (currentAction == kActionActivate?kActionDeactivate:kActionActivate);
 				currentBeacon.authorized = fAuthorized && fActivate;
+				currentBeacon.save(NeverLostActivity.this);
+				controlService(fActivate);
 				setLoginLabel();
-				saveBeacon();
 			}
 			
 			@Override
@@ -331,7 +302,6 @@ public class NeverLostActivity extends Activity {
 		txtPassword.setEnabled(!fActivate);
 		txtPassword.setClickable(!fActivate);
 		txtStatusText.setEnabled(!fActivate);
-		
 		
 		return true;
 	}
@@ -371,7 +341,6 @@ public class NeverLostActivity extends Activity {
 		
 		if ( fActive ) {
 			// загоняем наш бикончик в префы
-			saveBeacon();
 			// пошло поехало
 			doBindService();
 		    Calendar cal = Calendar.getInstance();
@@ -388,7 +357,6 @@ public class NeverLostActivity extends Activity {
 	      	Toast.makeText(NeverLostActivity.this, "Сервис остановлен...",Toast.LENGTH_SHORT).show();
 			edit.putBoolean("active",false);
 		}
-		btnActivate.setEnabled(!fActive);
 		edit.commit();
 		return true;
 	}

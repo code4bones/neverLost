@@ -56,33 +56,14 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" >
-
+
         <Button
-            android:id="@+id/btnFetchBeacons"
-            android:layout_width="wrap_content"
+            android:id="@+id/btnActivate"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:text="Выбрать телефон" />
-
-        <Button
-            android:id="@+id/btnActivate"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_alignBaseline="@+id/btnFetchBeacons"
-            android:layout_alignBottom="@+id/btnFetchBeacons"
-            android:layout_marginLeft="20dp"
-            android:layout_toRightOf="@+id/btnFetchBeacons"
-            android:text="Активировать" />
-
-        <ToggleButton
-            android:id="@+id/tbActivate"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="false"
-            android:layout_toRightOf="@+id/btnActivate"
-            android:text="ToggleButton" />
 
     </RelativeLayout>
 

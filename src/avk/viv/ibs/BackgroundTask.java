@@ -24,7 +24,7 @@ public class BackgroundTask<Result,Param> extends AsyncTask<Param, Void, Result>
 	protected void onPreExecute() {
 	    progress = new ProgressDialog(context);
 	    progress.setTitle("Подождите...");
-	    progress.setMessage("Получение данных...");
+	    progress.setMessage("Обработка запроса...");
 	    progress.setIndeterminate(true);
 	    progress.setCancelable(true);
 	    progress.show();
