@@ -29,7 +29,7 @@
             android:paddingTop="10px"
             android:text="Широта"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="250px" />
+            android:width="150px" />
 
         <TextView
             android:id="@+id/lbLatitudeValue"
@@ -51,7 +51,7 @@
             android:layout_marginTop="15dp"
             android:text="Долгота"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="250px" />
+            android:width="150px" />
 
         <TextView
             android:id="@+id/lbLongitudeValue"
@@ -73,7 +73,7 @@
             android:layout_marginTop="17dp"
             android:text="Точность"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="250px" />
+            android:width="150px" />
 
         <TextView
             android:id="@+id/lbAccuracyValue"
@@ -95,7 +95,7 @@
             android:layout_marginTop="18dp"
             android:text="Время"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="250px" />
+            android:width="150px" />
 
         <TextView
             android:id="@+id/lbTimeValue"

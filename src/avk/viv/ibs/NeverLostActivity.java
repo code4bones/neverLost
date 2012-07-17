@@ -114,8 +114,8 @@ public class NeverLostActivity extends Activity {
 		}
 		
 		// TODO:: Remove 
-		currentBeacon.login    = "bada"; //"v.g.0873@bk.ru";
-		currentBeacon.password = "bada"; //"9d8x4";
+		//currentBeacon.login    = "bada"; //"v.g.0873@bk.ru";
+		//currentBeacon.password = "bada"; //"9d8x4";
 
 		// Состояние контролсов
 		
