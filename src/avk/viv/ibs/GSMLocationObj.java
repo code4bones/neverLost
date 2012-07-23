@@ -39,16 +39,19 @@ public class GSMLocationObj extends LocationObj implements ILocationObj {
         };
 
         Date currentTime = new Date();
-		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yy'_'HH:mm:ss");
 		sTime = df.format(currentTime);
    	};
    	
 	public String getURL() {
-		String sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.saveLocation_Phone_GSM</name><index>1</index><param>%s^%d^%d^%d^%d^-%s^%s^%s</param></function></request>";
+		String sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.saveLocation_Phone_GSM</name><index>1</index><param>%s^%d^%d^%d^%d^%s^%s^%s</param></function></request>";
 	    return String.format(sRequest, beaconID,cid,lac,mcc,mnc,GatewayUtil.md5(GatewayUtil.deviceID),statusText,sTime);
 	}
     
 	public String getFile() {
-		return "";
+		if( cid != -1 && lac != -1 )
+			return String.format("2^%s^%d^%d^%d^%d^%s^%s^%s\n",beaconID,cid,lac,mcc,mnc,GatewayUtil.md5(GatewayUtil.deviceID),statusText,new SimpleDateFormat("dd-MM-yyyy'_'HH:mm:ss").format(new Date()));
+		else
+			return "";
 	}	
 }; // GSMLocationObj

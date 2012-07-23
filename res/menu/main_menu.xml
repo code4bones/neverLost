@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/miStatus" android:title="Статус"></item>
+    <item android:id="@+id/miStatus" android:title="Координаты"></item>
    <!--  
     <item android:id="@+id/miSeatMate" android:title="Друг"></item>
    -->
+    <item android:id="@+id/miStatusOnMap" android:title="Статус на карте"></item>
 </menu>

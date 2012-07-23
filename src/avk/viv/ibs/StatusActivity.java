@@ -108,7 +108,7 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
         					Date dt = df.parse(obj.date);
 	        				long tm = dt.getTime();
 	        				loc.setTime(tm);
-	        				NetLog.Toast(StatusActivity.this,"Последняя локация из базы..." );
+	        				NetLog.Toast(StatusActivity.this,"Последняя координата..." );
 	    	        		updateUI(new GPSOrNetworkLocationObj(beaconID,loc,sStatus));
         				} catch ( ParseException e )
         				{
@@ -117,7 +117,7 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
         			} // beacon found
         			else {
         				// в базе нихера нет, тогда берем последнюю...
-        				NetLog.Toast(StatusActivity.this,"Последняя актуальная локация..." );
+        				NetLog.Toast(StatusActivity.this,"Последняя актуальная координата..." );
         				StatusActivity.this.getLastKnownLocation(beaconID,sStatus);
         			} // beacon not found
         		} // onComplete
@@ -139,7 +139,7 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
         	}
    		 	
         	if ( location != null  ) {
-        		NetLog.Toast(this, "Координаты/%s", bestProvider);
+        		//NetLog.Toast(this, "Координаты/%s", bestProvider);
         		updateUI(new GPSOrNetworkLocationObj(beaconID,location,sStatus));
         	} else {
         		NetLog.Toast(this, "Ошибка получения координат через %s",bestProvider);
@@ -157,10 +157,13 @@ public class StatusActivity extends Activity implements IUpdateStatusUI<GPSOrNet
 		public boolean onOptionsItemSelected(MenuItem item) {
 		    // Handle item selection
 		    switch (item.getItemId()) {
-		        case R.id.miSwitch:
+		        
+		    /*
+		      case R.id.miSwitch:
 		        	Intent myIntent = new Intent(this, GsmStatusActivity.class);
 	                startActivityForResult(myIntent, 0);
 		            return true;
+		            */
 		        default:
 		            return super.onOptionsItemSelected(item);
 		    }

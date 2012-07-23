@@ -18,6 +18,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Html;
@@ -29,6 +32,8 @@ import android.view.View;
 import android.view.View.OnKeyListener;
 import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.provider.Settings;
+
 
 public class NeverLostActivity extends Activity {
     /** Called when the activity is first created. */
@@ -40,6 +45,7 @@ public class NeverLostActivity extends Activity {
 	
 	public int currentAction = kActionActivate;
 	
+	public static NeverLostActivity instance;
 	// GUI
 	
 	//public Button	btnAc;
@@ -50,7 +56,7 @@ public class NeverLostActivity extends Activity {
 	public EditText txtPassword;
 	//public Spinner  spBeacons;
 	//public TextView lbInterval;
-	public EditText txtStatusText;
+	//public EditText txtStatusText;
 	static public BeaconObj currentBeacon;
     
 	public Intent statusIntent = null;
@@ -62,18 +68,56 @@ public class NeverLostActivity extends Activity {
 	////
 	
 	public static final PrintStream log = NetLog.Init("clinch","neverLost.log",true);
+
+	public void clearUserInput () {
+		txtLogin.setText("");
+		txtPassword.setText("");
+	}
 	
 	public void setLoginLabel() {
 		this.lbLogin.setText(String.format("Логин / %s%s",
 				currentBeacon.name != null && currentBeacon.name.length() > 0?currentBeacon.name:"",
-				currentBeacon.authorized?" - Активирован":" - Не активирован"));
-		this.btnActivate.setText(!currentBeacon.authorized?"Активировать":"Остановить");
+				currentBeacon.authorized?" - Активирован":" - Не активен"));
+		this.btnActivate.setText(!currentBeacon.authorized?"Активировать":"Деактивировать");
+	}
+	
+	public static NeverLostActivity GetInstance () {
+		return instance;
+	}
+	
+	public void CheckDependencies (Context cntx) {
+		
+		try {
+			
+			LocationManager gpsManager = (LocationManager)cntx.getSystemService(Context.LOCATION_SERVICE);
+			LocationManager wifiManager = (LocationManager)cntx.getSystemService(Context.LOCATION_SERVICE);
+			
+			if ( gpsManager != null && wifiManager != null )
+			{
+				
+				boolean data_enabled = Settings.Secure.getInt(getContentResolver(), "mobile_data", 1) == 1;
+				boolean gps_enabled = gpsManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+				boolean network_enabled = wifiManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+			
+				if( !data_enabled || !(gps_enabled || network_enabled) )
+					NetLog.MsgBox(cntx, getString(R.string.app_name),
+							"Для полноценной работы сервиса необходимо, чтобы все настройки были включены:\n\n Передача данных: %s \n\n Местоположение:\n  Gps: %s \n  Беспроводные сети: %s",
+							data_enabled?"Вкл":"Выкл", gps_enabled?"Вкл":"Выкл",network_enabled?"Вкл":"Выкл" );
+				
+			} else
+				NetLog.v("location manager not allowed");
+			
+		} catch (Exception e ) {
+			NetLog.v("Не удалось получить настройки устройства. exception:%s",e.getMessage());
+		}
 	}
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        instance = this;
 
         // HTTP Gateway Utility Object
         gatewayUtil = new GatewayUtil(this);
@@ -83,7 +127,7 @@ public class NeverLostActivity extends Activity {
 
         boolean fRunning = isServiceRunning();
 		if ( fRunning ) {
-			NetLog.Toast(this,"Сервис уже запущен !");
+			NetLog.Toast(this,"Сервис работает !");
 			currentAction = kActionDeactivate;
 		}
         
@@ -92,7 +136,11 @@ public class NeverLostActivity extends Activity {
         this.txtLogin = (EditText)findViewById(R.id.txtLogin);
         this.txtPassword = (EditText)findViewById(R.id.txtPassword);
         this.btnActivate = (Button)findViewById(R.id.btnActivate);
-        this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
+        //this.txtStatusText = (EditText)findViewById(R.id.txtStatus);
+        
+        
+        CheckDependencies(this);
+        
         
         // пока не залогинены - нахер
         
@@ -110,7 +158,8 @@ public class NeverLostActivity extends Activity {
 					currentBeacon.interval,
 					currentBeacon.authorized);
 			currentAction = currentBeacon.authorized?kActionDeactivate:kActionActivate;
-			setLoginLabel();
+			if(currentBeacon.authorized) 
+				setLoginLabel();
 		}
 		
 		// TODO:: Remove 
@@ -119,13 +168,13 @@ public class NeverLostActivity extends Activity {
 
 		// Состояние контролсов
 		
-		this.txtLogin.setText(currentBeacon.login);
-		this.txtPassword.setText(currentBeacon.password);
-        this.txtStatusText.setText(currentBeacon.status);
+//		this.txtLogin.setText(currentBeacon.login);
+//		this.txtPassword.setText(currentBeacon.password);
+//      this.txtStatusText.setText(currentBeacon.status);
 
-        this.txtLogin.setEnabled(!fRunning && !currentBeacon.authorized);
-		this.txtPassword.setEnabled(!fRunning && !currentBeacon.authorized);
-		this.txtStatusText.setEnabled(!fRunning && !currentBeacon.authorized);
+//      this.txtLogin.setEnabled(!fRunning && !currentBeacon.authorized);
+//		this.txtPassword.setEnabled(!fRunning && !currentBeacon.authorized);
+//		this.txtStatusText.setEnabled(!fRunning && !currentBeacon.authorized);
         
         
         
@@ -146,8 +195,17 @@ public class NeverLostActivity extends Activity {
 				if ( currentBeacon.authorized == false ) {
 					 selectBeacon(txtLogin.getText().toString(),txtPassword.getText().toString());
 				} else { // authorized - stop
-					NetLog.Toast(NeverLostActivity.this, "Остановка");
-					activateBeacon(false);
+					
+					if( currentBeacon.login.equals(txtLogin.getText().toString()) 
+							&& currentBeacon.password.equals(txtPassword.getText().toString()) )
+					{
+						NetLog.Toast(NeverLostActivity.this, "Остановка");
+						activateBeacon(false);
+						
+					} else {
+						NetLog.Toast(NeverLostActivity.this, "Логин или пароль введены не верно");
+					}
+					
 				}
 			} // onClick
 		}; // onSelectBeacon
@@ -192,7 +250,10 @@ public class NeverLostActivity extends Activity {
 		this.txtLogin.setOnKeyListener(onValidateInput);
 		this.txtPassword.setOnKeyListener(onValidateInput);
 
-		
+		if (currentBeacon.authorized) {
+			Intent myIntent1 = new Intent(this, StatusActivity.class);
+        	this.startActivityFromChild(this, myIntent1, 0);
+		}
 		
 	} // onCreate
 
@@ -207,16 +268,18 @@ public class NeverLostActivity extends Activity {
 	    final ListView listView = (ListView)dlg.findViewById(R.id.lbList);
 		
 
-		dlg.setTitle(Html.fromHtml("Телефон для активации"));
+		dlg.setTitle(Html.fromHtml("Пользователь для активации"));
 		
 	    // установка дружбана для показа на карте
 	    listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> item, View arg1, int position,long id) {
+				listView.requestFocusFromTouch();
+				listView.setSelection(position);
 				BeaconObj obj = (BeaconObj)item.getAdapter().getItem(position);
 				currentBeacon = obj;
 				currentBeacon.login = txtLogin.getText().toString();
 				currentBeacon.password = txtPassword.getText().toString();
-				String sTitle = String.format("Выбран телефон - <b>%s<b>",currentBeacon.name);
+				String sTitle = String.format("Выбран: <b>%s<b>",currentBeacon.name);
 				dlg.setTitle(Html.fromHtml(sTitle));
 			}
 	    });
@@ -240,12 +303,13 @@ public class NeverLostActivity extends Activity {
 			@Override
 			public void OnComplete(ArrayList<BeaconObj> beaconList) {
 				if ( beaconList == null ) {
-					NetLog.MsgBox(NeverLostActivity.this,"Ошибка","Ошибка получения списка:%s",gatewayUtil.responseMSG);
+					//NetLog.MsgBox(NeverLostActivity.this,"Ошибка","Ошибка получения списка:%s",gatewayUtil.responseMSG);
+					NetLog.MsgBox(NeverLostActivity.this,"Ошибка","Ошибка получения списка");
 			        dlg.dismiss();
 					return;
 				} // beacon not set
 				if ( beaconList.size() == 0 ) {
-					NetLog.MsgBox(NeverLostActivity.this,"Внимание","Нет зарегестрированных телефонов");
+					NetLog.MsgBox(NeverLostActivity.this,"Внимание","Нет зарегестрированных пользователей");
 					dlg.dismiss();
 					return;
 				}
@@ -268,14 +332,16 @@ public class NeverLostActivity extends Activity {
 			
 			public void onComplete(Boolean fAuthorized ) {
 				if ( !fAuthorized )
-					NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать телефон: %s", gatewayUtil.responseMSG);
+					NetLog.MsgBox(NeverLostActivity.this, "Активация", "Не возможно активировать: %s", gatewayUtil.responseMSG);
 				else
-					NetLog.Toast(this.context,"Телефон %s %s",currentBeacon.name,fActivate?"Активирован":"Деактивирован");
+					NetLog.Toast(this.context,"Пользователь %s %s",currentBeacon.name,fActivate?"Активирован":"Деактивирован");
 				currentAction = (currentAction == kActionActivate?kActionDeactivate:kActionActivate);
 				currentBeacon.authorized = fAuthorized && fActivate;
 				currentBeacon.save(NeverLostActivity.this);
 				controlService(fActivate);
 				setLoginLabel();
+				clearUserInput();
+				
 			}
 			
 			@Override
@@ -297,11 +363,11 @@ public class NeverLostActivity extends Activity {
     	authTask.execute(currentBeacon);
 	
 		
-		txtLogin.setEnabled(!fActivate);
-		txtLogin.setClickable(!fActivate);
-		txtPassword.setEnabled(!fActivate);
-		txtPassword.setClickable(!fActivate);
-		txtStatusText.setEnabled(!fActivate);
+//		txtLogin.setEnabled(!fActivate);
+//		txtLogin.setClickable(!fActivate);
+//		txtPassword.setEnabled(!fActivate);
+//		txtPassword.setClickable(!fActivate);
+//		txtStatusText.setEnabled(!fActivate);
 		
 		return true;
 	}
@@ -363,7 +429,7 @@ public class NeverLostActivity extends Activity {
 
 	
 	void saveBeacon() {
-		currentBeacon.status = txtStatusText.getText().toString();
+		//currentBeacon.status = txtStatusText.getText().toString();
 		currentBeacon.save(this);
 	}
 	
@@ -409,7 +475,13 @@ public class NeverLostActivity extends Activity {
 	        	Intent myIntent3 = new Intent(this, SeatmateActivity.class);
                 startActivityForResult(myIntent3, 0);
 	        	return true;
-	        	*/
+	        */
+             
+	        case R.id.miStatusOnMap:
+	        	Intent statusMapIntent = new Intent(this, StatusOnMapLayout.class);
+            	this.startActivityFromChild(this, statusMapIntent, 0);
+	        	return true;
+            
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }

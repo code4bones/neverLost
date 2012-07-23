@@ -26,7 +26,7 @@ public class FetchBeaconsTask extends AsyncTask<Void,Void,ArrayList<BeaconObj>> 
 	@Override
 	protected void onPreExecute() {
 	    progress = new ProgressDialog(this.gatewayUtil.context);
-	    progress.setMessage("Получение списка телефонов");
+	    progress.setMessage("Получение списка пользователей");
 	    progress.setIndeterminate(true);
 	    progress.setCancelable(true);
 	    progress.show();

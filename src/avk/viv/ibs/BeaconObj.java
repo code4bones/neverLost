@@ -59,8 +59,8 @@ public class BeaconObj extends Object {
 			String tok = tokens.nextToken();
 			switch ( nToken ) {
 			case 0: obj.latitude  = Double.parseDouble(tok); break;
-			case 1: obj.longitude = Double.parseDouble(tok);break;
-			case 2: obj.accuracy  = Double.parseDouble(tok);break;
+			case 1: obj.longitude = Double.parseDouble(tok); break;
+			case 2: obj.accuracy  = Double.parseDouble(tok); break;
 			case 3: obj.date = tok;break;
 			case 4: obj.status = tok;break;
 				default:

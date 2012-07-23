@@ -17,31 +17,34 @@ public final class R {
     }
     public static final class id {
         public static final int btnActivate=0x7f060012;
-        public static final int btnDone=0x7f060015;
+        public static final int btnDone=0x7f060014;
         public static final int btnGoogle=0x7f06000b;
-        public static final int btnShowGSM=0x7f06001d;
-        public static final int lbAccuracy=0x7f06001a;
-        public static final int lbAccuracyValue=0x7f06001b;
+        public static final int btnSetStatusOnMap=0x7f060020;
+        public static final int btnShowGSM=0x7f06001c;
+        public static final int labeSymbLeft=0x7f06001f;
+        public static final int labelStatusOnMap=0x7f06001d;
+        public static final int lbAccuracy=0x7f060019;
+        public static final int lbAccuracyValue=0x7f06001a;
         public static final int lbCidValue=0x7f060002;
         public static final int lbLacValue=0x7f060004;
-        public static final int lbLatitude=0x7f060016;
-        public static final int lbLatitudeValue=0x7f060017;
+        public static final int lbLatitude=0x7f060015;
+        public static final int lbLatitudeValue=0x7f060016;
         public static final int lbLink=0x7f06000d;
-        public static final int lbList=0x7f060014;
+        public static final int lbList=0x7f060013;
         public static final int lbLogin=0x7f06000e;
-        public static final int lbLongitude=0x7f060018;
-        public static final int lbLongitudeValue=0x7f060019;
+        public static final int lbLongitude=0x7f060017;
+        public static final int lbLongitudeValue=0x7f060018;
         public static final int lbMccValue=0x7f060006;
         public static final int lbNameValue=0x7f060008;
         public static final int lbPassword=0x7f060010;
         public static final int lbStatus=0x7f060000;
-        public static final int lbTime=0x7f06001c;
+        public static final int lbTime=0x7f06001b;
         public static final int lbTimeValue=0x7f06000a;
         public static final int lbTitle=0x7f06000c;
-        public static final int miRefresh=0x7f060020;
-        public static final int miSelectBeacon=0x7f06001f;
-        public static final int miStatus=0x7f06001e;
-        public static final int miSwitch=0x7f060021;
+        public static final int miRefresh=0x7f060024;
+        public static final int miSelectBeacon=0x7f060023;
+        public static final int miStatus=0x7f060021;
+        public static final int miStatusOnMap=0x7f060022;
         public static final int textView1=0x7f060001;
         public static final int textView2=0x7f060003;
         public static final int textView3=0x7f060005;
@@ -49,7 +52,7 @@ public final class R {
         public static final int textView5=0x7f060009;
         public static final int txtLogin=0x7f06000f;
         public static final int txtPassword=0x7f060011;
-        public static final int txtStatus=0x7f060013;
+        public static final int txtStatusOnMap=0x7f06001e;
     }
     public static final class layout {
         public static final int gsm_status=0x7f030000;
@@ -57,6 +60,7 @@ public final class R {
         public static final int seatmate=0x7f030002;
         public static final int select_beacon=0x7f030003;
         public static final int statistics=0x7f030004;
+        public static final int statusonmap=0x7f030005;
     }
     public static final class menu {
         public static final int main_menu=0x7f050000;
@@ -65,7 +69,10 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f040001;
+        public static final int btnTextSetStatus=0x7f040004;
         public static final int hello=0x7f040000;
+        public static final int statusSymbInfo=0x7f040005;
         public static final int status_name=0x7f040002;
+        public static final int titleStatusOnmap=0x7f040003;
     }
 }

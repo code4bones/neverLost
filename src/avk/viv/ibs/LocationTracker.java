@@ -40,7 +40,7 @@ public class LocationTracker   {
 			String beaconID = prefs.getString("beaconID", "0");
 			
 			GatewayUtil gw = new GatewayUtil(context);
-			LocationObj locObj = new GPSOrNetworkLocationObj(beaconID,location,prefs.getString("statusText", "Нет Статуса..."));
+			LocationObj locObj = new GPSOrNetworkLocationObj(beaconID,location,prefs.getString("statusText", ""));
 			locObj.updateCount = updateCounter;
 			
 			if ( StatusActivity.updateHandler != null ) {
@@ -109,7 +109,7 @@ public class LocationTracker   {
 		String beaconID = prefs.getString("beaconID", "0");
 		
 		// Сразу хватаем данные с вышек
-	    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,prefs.getString("statusText","Нет статуса..."));
+	    GSMLocationObj locObj = new GSMLocationObj(beaconID,context,prefs.getString("statusText",""));
 	    if ( !gatewayUtil.saveLocation(locObj) )
 	    	NetLog.v("Failed to save GSM location: %s",gatewayUtil.responseMSG);
 	    else  { 

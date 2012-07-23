@@ -3,25 +3,16 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
-
+
     <TextView
         android:id="@+id/lbTitle"
-        android:layout_width="292dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="24dp"
-        android:layout_marginTop="18dp"
-        android:gravity="center"
-        android:text="Ты где на карте?"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <TextView
-        android:id="@+id/lbLink"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:autoLink="web"
-        android:gravity="right"
-        android:text="www.tygdenakarte.ru"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:gravity="center"
+        android:paddingBottom="10px"
+        android:paddingTop="10px"
+        android:text="Ты где на карте?"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:id="@+id/lbLogin"
@@ -56,26 +47,26 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" >
-
+
         <Button
             android:id="@+id/btnActivate"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:text="Выбрать телефон" />
+            android:paddingTop="5px"
+            android:text="Активировать" />
 
     </RelativeLayout>
-
-    <EditText
-        android:id="@+id/txtStatus"
+
+    <TextView
+        android:id="@+id/lbLink"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.94"
-        android:ems="10"
-        android:hint="Статус на карте..."
-        android:lines="1"
-        android:maxLines="1"
-        android:singleLine="true" />
+        android:autoLink="web"
+        android:gravity="right"
+        android:paddingTop="15px"
+        android:text="www.tygdenakarte.ru"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </LinearLayout>

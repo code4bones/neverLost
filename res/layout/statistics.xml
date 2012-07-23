@@ -11,8 +11,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center_horizontal"
+        android:paddingTop="10px"
         android:text="Статус"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:paddingTop="20px"/>
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -29,7 +30,7 @@
             android:paddingTop="10px"
             android:text="Широта"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="150px" />
+            android:width="120px" />
 
         <TextView
             android:id="@+id/lbLatitudeValue"
@@ -51,7 +52,7 @@
             android:layout_marginTop="15dp"
             android:text="Долгота"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="150px" />
+            android:width="120px" />
 
         <TextView
             android:id="@+id/lbLongitudeValue"
@@ -63,7 +64,7 @@
             android:gravity="center_horizontal"
             android:text="0"
             android:textAppearance="?android:attr/textAppearanceMedium" />
-
+<!-- 
         <TextView
             android:id="@+id/lbAccuracy"
             android:layout_width="wrap_content"
@@ -73,7 +74,7 @@
             android:layout_marginTop="17dp"
             android:text="Точность"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="150px" />
+            android:width="120px" />
 
         <TextView
             android:id="@+id/lbAccuracyValue"
@@ -85,28 +86,17 @@
             android:gravity="center_horizontal"
             android:text="0"
             android:textAppearance="?android:attr/textAppearanceMedium" />
-
+ -->
         <TextView
             android:id="@+id/lbTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/lbAccuracy"
+            android:layout_below="@+id/lbLongitudeValue"
             android:layout_marginTop="18dp"
             android:text="Время"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:width="150px" />
-
-        <TextView
-            android:id="@+id/lbTimeValue"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/lbTime"
-            android:layout_alignBottom="@+id/lbTime"
-            android:layout_alignLeft="@+id/lbAccuracyValue"
-            android:gravity="center_horizontal"
-            android:text="01/01/12 00:00:00"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:width="120px" />
 
         <Button
             android:id="@+id/btnShowGSM"
@@ -116,7 +106,8 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_marginRight="14dp"
-            android:text="Показать данные GSM" />
+            android:text="Показать данные GSM"
+            android:visibility="invisible" />
 
         <Button
             android:id="@+id/btnGoogle"
@@ -126,7 +117,20 @@
             android:layout_below="@+id/lbTime"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="42dp"
-            android:text="Google" />
+            android:text="Google"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/lbTimeValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbTime"
+            android:layout_alignBottom="@+id/lbTime"
+            android:layout_alignLeft="@+id/btnShowGSM"
+            android:layout_alignParentRight="true"
+            android:gravity="center_horizontal"
+            android:text="01/01/12 00:00:00"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </RelativeLayout>
 

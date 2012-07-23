@@ -4,5 +4,8 @@
     <string name="hello">Hello World,TEST !</string>
     <string name="app_name">Ты где на карте ?</string>
     <string name="status_name">Статус</string>
+    <string name="titleStatusOnmap">Статус на карте</string>
+    <string name="btnTextSetStatus">Установить статус</string>
+    <string name="statusSymbInfo">Максимум: 60 символов</string>
 
 </resources>

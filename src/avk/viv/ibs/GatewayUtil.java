@@ -68,7 +68,7 @@ public class GatewayUtil {
 	        sURL = String.format(sRequest,login,pass); 
 	   }
 	    else {
-	        sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.phone_authorization</name><index></index><param>%s^%s^%s^-%s</param></function></request>";
+	        sRequest = "//shluz.tygdenakarte.ru:60080/cgi-bin/Location_02?document=<request><function><name>PHONEFUNC_PKG.phone_authorization</name><index></index><param>%s^%s^%s^%s</param></function></request>";
 	        sURL = String.format(sRequest,login,pass,beaconID,GatewayUtil.md5(GatewayUtil.deviceID));
 	    }
 		
@@ -157,10 +157,15 @@ public class GatewayUtil {
 		    		return false;
 		    	
 		    } else {
-		    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
-		    	ps.printf("%s", locationObj.getFile());
-		    	ps.close();
-		    	Log.v("clinch","Dumped to " + offlineFile);
+		    	String fileLine = locationObj.getFile();
+		    	if( fileLine.length() > 0)
+		    	{
+			    	PrintStream ps = new PrintStream(new FileOutputStream(offlineFile,true));
+			    	ps.printf("%s", locationObj.getFile());
+			    	ps.close();
+			    	Log.v("clinch","Dumped to " + offlineFile);
+		    	} else 
+		    		Log.v("clinch","Incorrect string to dump " + offlineFile);
 		    }  // not connected
 	    } catch ( Exception e ) {
     		Log.v("clinch","saveLocaton:" + e.toString());
@@ -218,7 +223,7 @@ public class GatewayUtil {
 	       //---------------		       
 	       outputStream.writeBytes ( "Content-Disposition: form-data; name=\"inputfile\";filename=\"" + offlineFile + "\"" + lineEnd ) ;
 	       outputStream.writeBytes ( "Content-Type: application/octet-stream\r\n\r\n") ;
-	       outputStream.writeBytes ( lineEnd ) ;
+	       //outputStream.writeBytes ( lineEnd ) ;
 	       
 	       outputStream.flush () ;
 	       
